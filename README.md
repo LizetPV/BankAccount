@@ -55,6 +55,16 @@ Ilustra las interacciones de los usuarios (`Client`) con el sistema.
 
 ![Diagrama de Casos de Uso](https://github.com/LizetPV/BankAccount/blob/main/assets/Diagrama%20de%20Caso%20de%20Uso.png)
 
+## Assets
+
+Todas las **imágenes de los diagramas UML** y las **ejecuciones de las consultas SQL** se encuentran en la carpeta [`assets`](./assets):  
+- `assets/UML diagrams` → Diagramas UML
+- `assets/SQL query executions` → Ejecuciones de consultas SQL 
+
+## Scripts
+
+Los **scripts SQL** utilizados para crear tablas, insertar datos y realizar consultas se encuentran en la carpeta [`scripts`](./scripts).  
+
 -----
 
 ## ⚙️ Funcionalidades Principales
