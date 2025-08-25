@@ -47,19 +47,19 @@ Bank/
 
 Muestra la relación de composición entre `Client` y `BankAccount`. Además, muestra las relaciones de asociación y dependencia entre las otras clases
 
-![Diagrama de Clases](https://github.com/LizetPV/BankAccount/blob/main/assets/Diagrama%20de%20Clases.png)
+![Diagrama de Clases](https://github.com/LizetPV/BankAccount/blob/main/assets/UMLdiagrams/Diagrama%20de%20Clases.png)
 
 ### Diagrama de Casos de Uso
 
 Ilustra las interacciones de los usuarios (`Client`) con el sistema.
 
-![Diagrama de Casos de Uso](https://github.com/LizetPV/BankAccount/blob/main/assets/Diagrama%20de%20Caso%20de%20Uso.png)
+![Diagrama de Casos de Uso](https://github.com/LizetPV/BankAccount/blob/main/assets/UMLdiagrams/Diagrama%20de%20Caso%20de%20Uso.png)
 
 ## Assets
 
 Todas las **imágenes de los diagramas UML** y las **ejecuciones de las consultas SQL** se encuentran en la carpeta [`assets`](./assets):  
-- `assets/UML diagrams` → Diagramas UML
-- `assets/SQL query executions` → Ejecuciones de consultas SQL 
+- `assets/UMLdiagrams` → Diagramas UML
+- `assets/SQLQueryExecutions` → Ejecuciones de consultas SQL 
 
 ## Scripts
 
