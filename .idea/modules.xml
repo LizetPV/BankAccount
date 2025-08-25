@@ -3,6 +3,11 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/API_BANK.iml" filepath="$PROJECT_DIR$/API_BANK.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LAMBDA/LAMBDA.iml" filepath="$PROJECT_DIR$/LAMBDA/LAMBDA.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LAMBDA/LAMBDA2.iml" filepath="$PROJECT_DIR$/LAMBDA/LAMBDA2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LAMBDA3/LAMBDA3.iml" filepath="$PROJECT_DIR$/LAMBDA3/LAMBDA3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LAMBDA5/LAMBDA5.iml" filepath="$PROJECT_DIR$/LAMBDA5/LAMBDA5.iml" />
+      <module fileurl="file://$PROJECT_DIR$/aaaa/aaaa.iml" filepath="$PROJECT_DIR$/aaaa/aaaa.iml" />
     </modules>
   </component>
 </project>
