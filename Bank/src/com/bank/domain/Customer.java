@@ -5,13 +5,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/** Entidad Cliente (agregado raíz). DNI es único. */
 public class Customer {
 
     // ===== Atributos =====
     private final String firstName;
     private final String lastName;
-    private final String dni; // único id
-    private final String email; // validated by regex
+    private final String dni; // identificador único
+    private final String email; // validado por regex
 
     // se crea un objeto de tipo lista q va a guardar las cuentas bancarias
     private final List<BankAccount> accounts = new ArrayList<>();
@@ -27,6 +28,7 @@ public class Customer {
         if (!EMAIL_RX.matcher(email).matches()) {
             throw new IllegalArgumentException("invalid email format");
         }
+        // Java 11: strip() quita espacios laterales
         this.firstName = firstName.strip();
         this.lastName = lastName.strip();
         this.dni = dni.strip();
@@ -35,7 +37,7 @@ public class Customer {
 
 
     // ===== Métodos de relación =====
-    //método void agregar cuenta
+    /** Agrega una cuenta verificando que el DNI del dueño coincida. */
     public void addAccount(BankAccount account) {
         if (account == null) throw new IllegalArgumentException("account is null");
         if (!this.dni.equals(account.getOwnerDni()))
@@ -43,7 +45,7 @@ public class Customer {
         accounts.add(account);
     }
 
-    //metodo mostrar la lista de cuentas
+    /** Vista de solo lectura para no permitir modificaciones externas. */
     public List<BankAccount> getAccountsReadOnly() { return Collections.unmodifiableList(accounts); }
 
     // ===== Getters / Setters (por ahora, para aprender mutabilidad) =====

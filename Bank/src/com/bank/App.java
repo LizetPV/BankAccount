@@ -14,6 +14,7 @@ public class App {
     private static BankService service;
 
     public static void main(String[] args) {
+        // Creamos el servicio con repos en memoria
         service = new BankServiceImpl(new InMemoryCustomerRepository(), new InMemoryBankAccountRepository());
         System.out.println("=== BANK CONSOLE (Java 11) ===");
 
@@ -41,16 +42,15 @@ public class App {
     }
 
     private static void printMenu() {
-        System.out.println("""
-                ------------------------------
-                1) Registrar cliente
-                2) Abrir cuenta (SAVINGS/CHECKING)
-                3) Depositar
-                4) Retirar
-                5) Consultar saldo
-                0) Salir
-                ------------------------------
-                Seleccione: """);
+        System.out.println("------------------------------\n" +
+                "1) Registrar cliente\n" +
+                "2) Abrir cuenta (SAVINGS/CHECKING)\n" +
+                "3) Depositar\n" +
+                "4) Retirar\n" +
+                "5) Consultar saldo\n" +
+                "0) Salir\n" +
+                "------------------------------\n" +
+                "Seleccione: ");
     }
 
     private static void registerCustomer() {
@@ -111,7 +111,6 @@ public class App {
             }
         }
     }
-
 
     private static String readNonBlank() {
         var s = SC.nextLine();

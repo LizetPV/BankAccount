@@ -12,14 +12,14 @@ public class InMemoryBankAccountRepository implements BankAccountRepository {
     private final Map<String, BankAccount> byNumber = new HashMap<>();
     private final AtomicLong seq = new AtomicLong(100_000L);
 
-
+    /** Genera números como ACC00000101 */
     private String nextNumber() { return String.format("ACC%08d", seq.incrementAndGet()); }
 
 
     @Override
     public BankAccount save(BankAccount account) {
         if (account.getAccountNumber() == null || account.getAccountNumber().isBlank()) {
-            account.setAccountNumber(nextNumber());
+            account.setAccountNumber(nextNumber());     // asigna número único
         }
         byNumber.put(account.getAccountNumber(), account);
         return account;

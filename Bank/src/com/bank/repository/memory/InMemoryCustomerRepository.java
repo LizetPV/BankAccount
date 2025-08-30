@@ -8,12 +8,12 @@ import java.util.*;
 
 
 public class InMemoryCustomerRepository implements CustomerRepository {
-    private final Map<String, Customer> byDni = new HashMap<>();
+    private final Map<String, Customer> byDni = new HashMap<>();        // clave: DNI
 
 
     @Override
     public Customer save(Customer customer) {
-        byDni.put(customer.getDni(), customer); // DNI unique
+        byDni.put(customer.getDni(), customer); // Map garantiza unicidad por clave
         return customer;
     }
 

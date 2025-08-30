@@ -5,6 +5,6 @@ import java.util.*;
 
 
 public interface CustomerRepository {
-    Customer save(Customer customer);
-    Optional<Customer> findByDni(String dni);
+    Customer save(Customer customer);           // crea/actualiza
+    Optional<Customer> findByDni(String dni);           // puede no existir -> Optional
 }
