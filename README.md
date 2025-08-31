@@ -66,6 +66,7 @@ Representan el flujo de mensajes entre objetos del sistema durante la ejecución
 ![Consultar Saldo](https://github.com/LizetPV/BankAccount/blob/Anais/assets/UMLdiagrams/Diagramas%20de%20Secuencias/Consultar%20Saldo.png)
 
 ### Diagrama de Componentes (Entregable 2)
+Muestra la organización modular del sistema en componentes y sus relaciones.
 ![Diagrama de Componentes](https://github.com/LizetPV/BankAccount/blob/Anais/assets/UMLdiagrams/Diagrama%20de%20Componentes/Diagrama%20de%20Componentes.png)
 
 ## Assets
