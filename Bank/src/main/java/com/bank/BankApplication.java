@@ -1,20 +1,24 @@
 package com.bank;
 
-import com.bank.domain.*;
+import java.util.Scanner;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import com.bank.domain.AccountType;
 import com.bank.repository.memory.InMemoryBankAccountRepository;
 import com.bank.repository.memory.InMemoryCustomerRepository;
 import com.bank.service.BankService;
 import com.bank.service.BankServiceImpl;
 
-import java.util.Scanner;
+@SpringBootApplication
+public class BankApplication {
 
-public class App {
-
-    private static final Scanner SC = new Scanner(System.in);
+	private static final Scanner SC = new Scanner(System.in);
     private static BankService service;
 
-    public static void main(String[] args) {
-        service = new BankServiceImpl(new InMemoryCustomerRepository(), new InMemoryBankAccountRepository());
+	public static void main(String[] args) {
+		service = new BankServiceImpl(new InMemoryCustomerRepository(), new InMemoryBankAccountRepository());
         System.out.println("=== BANK CONSOLE (Java 11) ===");
 
         boolean running = true;
@@ -38,9 +42,10 @@ public class App {
         }
         System.out.println("Bye!");
 
-    }
+		SpringApplication.run(BankApplication.class, args);
+	}
 
-    private static void printMenu() {
+	private static void printMenu() {
         System.out.println("""
                 ------------------------------
                 1) Registrar cliente
@@ -126,5 +131,5 @@ public class App {
         if (v <= 0) throw new IllegalArgumentException("El monto debe ser > 0.");
         return v;
     }
-}
 
+}
