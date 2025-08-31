@@ -47,18 +47,31 @@ Bank/
 
 Muestra la relación de composición entre `Client` y `BankAccount`. Además, muestra las relaciones de asociación y dependencia entre las otras clases
 
-![Diagrama de Clases](https://github.com/LizetPV/BankAccount/blob/main/assets/UMLdiagrams/Diagrama%20de%20Clases.png)
+![Diagrama de Clases] (https://github.com/LizetPV/BankAccount/blob/Anais/assets/UMLdiagrams/Diagrama%20de%20Clases/Diagrama%20de%20Clases.png)
 
 ### Diagrama de Casos de Uso
 
 Ilustra las interacciones de los usuarios (`Client`) con el sistema.
 
-![Diagrama de Casos de Uso](https://github.com/LizetPV/BankAccount/blob/main/assets/UMLdiagrams/Diagrama%20de%20Caso%20de%20Uso.png)
+![Diagrama de Casos de Uso] (https://github.com/LizetPV/BankAccount/blob/Anais/assets/UMLdiagrams/Diagramas%20de%20Caso%20de%20Uso/Diagrama%20de%20Caso%20de%20Uso.png)
+
+### Diagramas de Secuencias (Entregable 2)
+
+Representan el flujo de mensajes entre objetos del sistema durante la ejecución de casos de uso específicos.
+
+![Registrar Cliente] (https://github.com/LizetPV/BankAccount/blob/Anais/assets/UMLdiagrams/Diagramas%20de%20Secuencias/Registrar%20Cliente.png)
+![Abrir Cuenta Bancaria] (https://github.com/LizetPV/BankAccount/blob/Anais/assets/UMLdiagrams/Diagramas%20de%20Secuencias/Abrir%20Cuenta%20Bancaria.png)
+![Depositar Dinero] (https://github.com/LizetPV/BankAccount/blob/Anais/assets/UMLdiagrams/Diagramas%20de%20Secuencias/Depositar%20Dinero.png)
+![Retirar Dinero] (https://github.com/LizetPV/BankAccount/blob/Anais/assets/UMLdiagrams/Diagramas%20de%20Secuencias/Retirar%20Dinero.png)
+![Consultar Saldo] (https://github.com/LizetPV/BankAccount/blob/Anais/assets/UMLdiagrams/Diagramas%20de%20Secuencias/Consultar%20Saldo.png)
+
+### Diagrama de Componentes (Entregable 2)
+![Diagrama de Componentes] (https://github.com/LizetPV/BankAccount/blob/Anais/assets/UMLdiagrams/Diagrama%20de%20Componentes/Diagrama%20de%20Componentes.png)
 
 ## Assets
 
 Todas las **imágenes de los diagramas UML** y las **ejecuciones de las consultas SQL** se encuentran en la carpeta [`assets`](./assets):  
-- `assets/UMLdiagrams` → Diagramas UML
+- `assets/UMLdiagrams` → Diagramas UML (Clases, Casos de Uso, Secuencia, Componentes)
 - `assets/SQLQueryExecutions` → Ejecuciones de consultas SQL 
 
 ## Scripts
