@@ -12,8 +12,8 @@ La solución se compone de dos microservicios principales que se comunican para 
 * **`Account-MS`**: Microservicio dedicado a la **gestión de cuentas bancarias** y la ejecución de transacciones, como depósitos y retiros.
 
 Para una mejor comprensión de la arquitectura, se han incluido los siguientes diagramas en la carpeta `diagrams`:
-* **Diagrama de Componentes**: Ilustra la estructura de los microservicios y sus interacciones.
-* **Diagrama de Secuencia**: Detalla el flujo de comunicación entre los servicios para operaciones clave.
+* **[Diagrama de Componentes](https://github.com/LizetPV/BankAccount/tree/entregable2/documentation/UMLdiagrams/Diagrama%20de%20Componentes)**: Ilustra la estructura de los microservicios y sus interacciones.
+* **[Diagrama de Secuencia](https://github.com/LizetPV/BankAccount/tree/entregable2/documentation/UMLdiagrams/Diagramas%20de%20Secuencias)**: Detalla el flujo de comunicación entre los servicios para operaciones clave.
 
 ---
 
@@ -84,5 +84,5 @@ Ambos microservicios exponen sus funcionalidades a través de **endpoints RESTfu
 4.  **Realiza las pruebas:**
     * Utiliza **Postman** para interactuar con los endpoints.
     * Los servicios se ejecutan en los siguientes puertos:
-        * `Customer-MS`: **`http://localhost:8080`**
-        * `Account-MS`: **`http://localhost:8081`**
+        * `Customer-MS`: **`http://localhost:8081`**
+        * `Account-MS`: **`http://localhost:8082`**
