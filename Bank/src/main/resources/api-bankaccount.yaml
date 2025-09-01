@@ -1,0 +1,176 @@
+openapi: 3.0.3
+info:
+  title: Bank Account Management API
+  version: 1.0.0
+paths:
+  /accounts:
+    post:
+      summary: Create an account for a customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountInput'
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+    get:
+      summary: List all bank accounts
+      responses:
+        '200':
+          description: List of accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+  /accounts/{id}:
+    get:
+      summary: Get account details by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Account details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '404':
+          description: Account not found
+    delete:
+      summary: Delete a bank account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Account deleted
+        '404':
+          description: Account not found
+  /accounts/{accountId}/deposit:
+    put:
+      summary: Make a deposit to a bank account
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  format: double
+                  minimum: 0.01
+              required:
+                - amount
+      responses:
+        '200':
+          description: Deposit successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          description: Invalid amount
+        '404':
+          description: Account not found
+  /accounts/{accountId}/withdraw:
+    put:
+      summary: Make a withdrawal from a bank account
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  format: double
+                  minimum: 0.01
+              required:
+                - amount
+      responses:
+        '200':
+          description: Withdrawal successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          description: Insufficient balance or business rule violation
+        '404':
+          description: Account not found
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 123
+        accountNumber:
+          type: string
+          example: "ACC20250001"
+        balance:
+          type: number
+          format: double
+          example: 1500.75
+        accountType:
+          type: string
+          enum: [SAVINGS, CHECKING]
+          example: "SAVINGS"
+        customerId:
+          type: integer
+          example: 45
+      required:
+        - id
+        - accountNumber
+        - balance
+        - accountType
+        - customerId
+    AccountInput:
+      type: object
+      properties:
+        accountType:
+          type: string
+          enum: [SAVINGS, CHECKING]
+          example: "CHECKING"
+        customerId:
+          type: integer
+          example: 45
+        initialBalance:
+          type: number
+          format: double
+          minimum: 0.01
+          example: 100.0
+      required:
+        - accountType
+        - customerId
+        - initialBalance
