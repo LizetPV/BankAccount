@@ -4,9 +4,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-/**
- * DTOs como records (Java 17)
- */
 public final class AccountDtos {
 
     public record AccountDto(

@@ -6,6 +6,8 @@ import com.bank.accountms.domain.Account;
 import com.bank.accountms.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -64,7 +66,6 @@ public class AccountService {
         return repo.save(a);
     }
 
-    // ejemplo async para total por cliente
     public CompletableFuture<Double> totalBalanceAsync(Long customerId) {
         var accounts = repo.findByCustomerId(customerId);
         var futures = accounts.stream()
@@ -77,5 +78,12 @@ public class AccountService {
 
     private String generateNumber() {
         return "ACC" + System.nanoTime();
+    }
+
+    public Page<Account> list(Long customerId, Pageable pageable) {
+        if (customerId == null) {
+            return repo.findAll(pageable);
+        }
+        return repo.findByCustomerId(customerId, pageable);
     }
 }

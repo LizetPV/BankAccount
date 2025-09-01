@@ -5,22 +5,41 @@ import com.bank.accountms.api.mapper.AccountMapper;
 import com.bank.accountms.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Page;
+
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-@RequestMapping("/cuentas")
+//@RequestMapping("/cuentas")
+@RequestMapping("/api/v1/cuentas")
 @RequiredArgsConstructor
 public class AccountController {
 
     private final AccountService service;
 
+
     @GetMapping
-    public List<AccountDto> list(@RequestParam(required = false) Long customerId) {
-        return service.list(customerId).stream().map(AccountMapper::toDto).toList();
+    public Page<AccountDto> list(
+            @RequestParam(required = false) Long customerId,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC)
+            Pageable pageable) {
+
+        var safePageable = enforceMax(pageable, 50);
+        return service.list(customerId, safePageable).map(AccountMapper::toDto);
+    }
+
+    private Pageable enforceMax(Pageable pageable, int maxSize) {
+        int size = Math.min(pageable.getPageSize(), maxSize);
+        Sort sort = pageable.getSort();
+        return PageRequest.of(pageable.getPageNumber(), size, sort);
     }
 
     @PostMapping
@@ -50,9 +69,10 @@ public class AccountController {
         return AccountMapper.toDto(service.withdraw(id, dto));
     }
 
-    // opcional: suma asíncrona de saldos
     @GetMapping("/total-balance")
     public CompletableFuture<Double> total(@RequestParam Long customerId) {
         return service.totalBalanceAsync(customerId);
     }
+
+
 }
