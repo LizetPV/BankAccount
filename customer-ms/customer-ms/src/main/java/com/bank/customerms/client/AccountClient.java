@@ -13,14 +13,15 @@ public class AccountClient {
     private final RestClient restClient;
 
     @Value("${account.service.base-url}")
-    private String baseUrl;
+    private static final String ACCOUNTS_BASE = "/api/v1/cuentas";
+
 
     /**
      * Devuelve true si el cliente tiene al menos una cuenta en account-ms
      */
     public boolean hasAccounts(Long customerId) {
         var accounts = restClient.get()
-                .uri(baseUrl + "/cuentas?customerId={id}", customerId)
+                .uri(ACCOUNTS_BASE + "/cuentas?customerId={id}", customerId)
                 .retrieve()
                 .body(AccountDto[].class);
         return accounts != null && accounts.length > 0;

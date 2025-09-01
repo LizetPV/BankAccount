@@ -7,6 +7,8 @@ import com.bank.customerms.repository.CustomerRepository;
 import com.bank.customerms.client.AccountClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -49,10 +51,18 @@ public class CustomerService {
 
     public void delete(Long id) {
         var c = get(id);
-        // Regla: no borrar si tiene cuentas activas en account-ms
         if (accountClient.hasAccounts(c.getId())) {
             throw new IllegalStateException("Customer has active accounts");
         }
         repo.deleteById(id);
+    }
+
+    public Page<Customer> list(String q, Pageable pageable) {
+        if (q == null || q.isBlank()) {
+            return repo.findAll(pageable);
+        }
+        var k = q.strip();
+        return repo.findByDniContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                k, k, k, pageable);
     }
 }
