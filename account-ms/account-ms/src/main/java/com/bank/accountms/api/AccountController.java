@@ -1,78 +1,109 @@
 package com.bank.accountms.api;
 
-import com.bank.accountms.api.dto.AccountDtos.*;
-import com.bank.accountms.api.mapper.AccountMapper;
+import com.bank.accountms.contract.api.CuentasApi;
+import com.bank.accountms.contract.model.AccountCreateDto;
+import com.bank.accountms.contract.model.AccountDto;
+import com.bank.accountms.contract.model.AccountPage;
+import com.bank.accountms.contract.model.AmountDto;
+import com.bank.accountms.domain.Account;
 import com.bank.accountms.service.AccountService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.data.domain.Page;
-
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import org.springframework.data.domain.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-//@RequestMapping("/cuentas")
-@RequestMapping("/api/v1/cuentas")
 @RequiredArgsConstructor
-public class AccountController {
+public class AccountController implements CuentasApi {
 
     private final AccountService service;
 
+    @Override
+    public ResponseEntity<AccountPage> listAccounts(Long customerId, Integer page, Integer size, String sort) {
+        int p = (page == null || page < 0) ? 0 : page;
+        int s = (size == null || size < 1) ? 10 : Math.min(size, 50);
+        Sort sortSpec = parseSort(sort);
+        Pageable pageable = PageRequest.of(p, s, sortSpec);
 
-    @GetMapping
-    public Page<AccountDto> list(
-            @RequestParam(required = false) Long customerId,
-            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC)
-            Pageable pageable) {
+        Page<Account> pageDomain = service.list(customerId, pageable);
 
-        var safePageable = enforceMax(pageable, 50);
-        return service.list(customerId, safePageable).map(AccountMapper::toDto);
+        AccountPage resp = new AccountPage();
+        resp.setNumber(pageDomain.getNumber());
+        resp.setSize(pageDomain.getSize());
+        resp.setTotalElements(pageDomain.getTotalElements());
+        resp.setTotalPages(pageDomain.getTotalPages());
+        resp.setFirst(pageDomain.isFirst());
+        resp.setLast(pageDomain.isLast());
+        resp.setSort(sortSpec.isSorted() ? sortSpec.toString() : "");
+        resp.setContent(pageDomain.getContent().stream().map(this::toDto).toList());
+
+        return ResponseEntity.ok(resp);
     }
 
-    private Pageable enforceMax(Pageable pageable, int maxSize) {
-        int size = Math.min(pageable.getPageSize(), maxSize);
-        Sort sort = pageable.getSort();
-        return PageRequest.of(pageable.getPageNumber(), size, sort);
+    @Override
+    public ResponseEntity<AccountDto> createAccount(AccountCreateDto body) {
+        var created = service.create(
+                new com.bank.accountms.api.dto.AccountDtos.AccountCreateDto(
+                        body.getCustomerId(),
+                        body.getAccountType().getValue(),   // "SAVINGS" | "CHECKING"
+                        body.getInitialDeposit()
+                )
+        );
+        return ResponseEntity.status(201).body(toDto(created));
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public AccountDto create(@Valid @RequestBody AccountCreateDto dto) {
-        return AccountMapper.toDto(service.create(dto));
+    @Override
+    public ResponseEntity<AccountDto> getAccount(Long id) {
+        return ResponseEntity.ok(toDto(service.get(id)));
     }
 
-    @GetMapping("/{id}")
-    public AccountDto get(@PathVariable Long id) {
-        return AccountMapper.toDto(service.get(id));
-    }
-
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    @Override
+    public ResponseEntity<Void> deleteAccount(Long id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/depositar")
-    public AccountDto deposit(@PathVariable Long id, @Valid @RequestBody AmountDto dto) {
-        return AccountMapper.toDto(service.deposit(id, dto));
+    @Override
+    public ResponseEntity<AccountDto> deposit(Long id, AmountDto body) {
+        var updated = service.deposit(id,
+                new com.bank.accountms.api.dto.AccountDtos.AmountDto(body.getAmount())
+        );
+        return ResponseEntity.ok(toDto(updated));
     }
 
-    @PutMapping("/{id}/retirar")
-    public AccountDto withdraw(@PathVariable Long id, @Valid @RequestBody AmountDto dto) {
-        return AccountMapper.toDto(service.withdraw(id, dto));
+    @Override
+    public ResponseEntity<AccountDto> withdraw(Long id, AmountDto body) {
+        var updated = service.withdraw(id,
+                new com.bank.accountms.api.dto.AccountDtos.AmountDto(body.getAmount())
+        );
+        return ResponseEntity.ok(toDto(updated));
     }
 
-    @GetMapping("/total-balance")
-    public CompletableFuture<Double> total(@RequestParam Long customerId) {
-        return service.totalBalanceAsync(customerId);
+    @Override
+    public ResponseEntity<Double> totalBalance(Long customerId) {
+        return ResponseEntity.ok(service.totalBalanceAsync(customerId).join());
     }
 
+    // ---- helpers ----
+    private AccountDto toDto(Account a) {
+        AccountDto dto = new AccountDto();
+        dto.setId(a.getId());
+        dto.setAccountNumber(a.getAccountNumber());
+        dto.setBalance(a.getBalance());
+        dto.setCustomerId(a.getCustomerId());
+        dto.setAccountType(AccountDto.AccountTypeEnum.fromValue(a.getAccountType().name()));
+        return dto;
+    }
 
+    private Sort parseSort(String sort) {
+        if (sort == null || sort.isBlank()) return Sort.by(Sort.Direction.DESC, "id");
+        try {
+            var parts = sort.split(",", 2);
+            var field = parts[0].trim();
+            var dir = (parts.length > 1 ? parts[1].trim() : "asc");
+            return Sort.by("desc".equalsIgnoreCase(dir) ? Sort.Direction.DESC : Sort.Direction.ASC, field);
+        } catch (Exception e) {
+            return Sort.by(Sort.Direction.DESC, "id");
+        }
+    }
 }
