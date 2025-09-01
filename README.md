@@ -82,7 +82,7 @@ Ambos microservicios exponen sus funcionalidades a través de **endpoints RESTfu
     * Alternativamente, puedes ejecutar la aplicación directamente desde tu IDE (IntelliJ, VS Code, etc.).
 
 4.  **Realiza las pruebas:**
-    * Utiliza **Postman** para interactuar con los endpoints.
+    * Utiliza **Postman** para interactuar con los endpoints. En esta documentación se encuentra el archivo json de la [colección](http://github.com/LizetPV/BankAccount/blob/entregable2/documentation/Entregable2%20-%20Bank%20System.postman_collection.json).
     * Los servicios se ejecutan en los siguientes puertos:
         * `Customer-MS`: **`http://localhost:8081`**
         * `Account-MS`: **`http://localhost:8082`**
