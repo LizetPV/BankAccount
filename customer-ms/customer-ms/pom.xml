@@ -100,7 +100,6 @@
 					</excludes>
 				</configuration>
 			</plugin>
-            <!-- OpenAPI Generator (contract-first) -->
             <plugin>
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
@@ -119,7 +118,6 @@
                             <modelPackage>com.bank.customerms.contract.model</modelPackage>
                             <invokerPackage>com.bank.customerms.contract.invoker</invokerPackage>
 
-                            <!-- para que NO genere un controller concreto -->
                             <configOptions>
                                 <useSpringBoot3>true</useSpringBoot3>
                                 <useJakartaEe>true</useJakartaEe>
@@ -131,7 +129,6 @@
                                 <delegatePattern>false</delegatePattern>
                             </configOptions>
 
-                            <!-- (opcional) si quieres ignorar archivos extra -->
                             <ignoreFileOverride>${project.basedir}/src/main/resources/openapi/.openapi-generator-ignore</ignoreFileOverride>
 
                             <skipValidateSpec>false</skipValidateSpec>
