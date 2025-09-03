@@ -1,6 +1,6 @@
-".idea/" 
-".vscode/" 
-"target/" 
-"build/" 
-"out/" 
-"*.iml" 
+.idea/
+.vscode/
+target/
+build/
+out/
+*.iml
