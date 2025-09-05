@@ -1,248 +1,248 @@
-openapi: 3.0.1
-info:
-  title: Transacciones API - Banco XYZ
-  version: "1.0.0"
-  description: API contract-first para registrar depósitos, retiros y transferencias (Proyecto III).
-servers:
-  - url: http://localhost:8080
-    description: Local dev
+  openapi: 3.0.1
+  info:
+    title: Transaction API
+    version: "1.0.0"
+    description: API contract-first para registrar depósitos, retiros y transferencias (Proyecto III).
+  servers:
+    - url: http://localhost:8080
+      description: Local dev
 
-tags:
-  - name: Transacciones
-    description: Endpoints para registrar y consultar transacciones
+  tags:
+    - name: Transacciones
+      description: Endpoints para registrar y consultar transacciones
 
-paths:
-  /transacciones/deposito:
-    post:
-      tags: ["Transacciones"]
-      summary: Registrar un depósito
-      requestBody:
-        required: true
-        content:
-          application/json:
+  paths:
+    /transacciones/deposito:
+      post:
+        tags: ["Transacciones"]
+        summary: Registrar un depósito
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositoRequest'
+              examples:
+                example1:
+                  value:
+                    accountNumber: "123"
+                    amount: 150.00
+        responses:
+          '201':
+            description: Depósito registrado
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Transaccion'
+          '400':
+            description: Request inválido
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+          '422':
+            description: Por regla de negocio (ej. monto <= 0)
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+
+    /transacciones/retiro:
+      post:
+        tags: ["Transacciones"]
+        summary: Registrar un retiro
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetiroRequest'
+              examples:
+                example1:
+                  value:
+                    accountNumber: "123"
+                    amount: 50.00
+        responses:
+          '201':
+            description: Retiro registrado
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Transaccion'
+          '400':
+            description: Request inválido
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+          '422':
+            description: Saldo insuficiente o regla de negocio violada
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+
+    /transacciones/transferencia:
+      post:
+        tags: ["Transacciones"]
+        summary: Registrar una transferencia
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferenciaRequest'
+              examples:
+                example1:
+                  value:
+                    originAccountNumber: "cuenta-123"
+                    originDestinationNumber: "cuenta-456"
+                    amount: 200.00
+        responses:
+          '201':
+            description: Transferencia registrada
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Transaccion'
+          '400':
+            description: Request inválido
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+          '422':
+            description: Saldo insuficiente o regla de negocio violada
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+
+    /transacciones/historial:
+      get:
+        tags: ["Transacciones"]
+        summary: Consulta historial de transacciones (opcional filtrar por cuenta/tipo/fechas)
+        parameters:
+          - in: query
+            name: cuentaId
             schema:
-              $ref: '#/components/schemas/DepositoRequest'
-            examples:
-              ejemplo:
-                value:
-                  cuentaId: "cuenta-123"
-                  monto: 150.00
-      responses:
-        '201':
-          description: Depósito registrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Transaccion'
-        '400':
-          description: Request inválido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Regla de negocio violada (ej. monto <= 0)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /transacciones/retiro:
-    post:
-      tags: ["Transacciones"]
-      summary: Registrar un retiro
-      requestBody:
-        required: true
-        content:
-          application/json:
+              type: string
+            description: Filtrar por cuenta (origen o destino)
+          - in: query
+            name: tipo
             schema:
-              $ref: '#/components/schemas/RetiroRequest'
-            examples:
-              ejemplo:
-                value:
-                  cuentaId: "cuenta-123"
-                  monto: 50.00
-      responses:
-        '201':
-          description: Retiro registrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Transaccion'
-        '400':
-          description: Request inválido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Saldo insuficiente o regla de negocio violada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /transacciones/transferencia:
-    post:
-      tags: ["Transacciones"]
-      summary: Registrar una transferencia
-      requestBody:
-        required: true
-        content:
-          application/json:
+              type: string
+              enum: [DEPOSITO, RETIRO, TRANSFERENCIA]
+            description: Filtrar por tipo de transacción
+          - in: query
+            name: fechaDesde
             schema:
-              $ref: '#/components/schemas/TransferenciaRequest'
-            examples:
-              ejemplo:
-                value:
-                  cuentaOrigenId: "cuenta-123"
-                  cuentaDestinoId: "cuenta-456"
-                  monto: 200.00
-      responses:
-        '201':
-          description: Transferencia registrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Transaccion'
-        '400':
-          description: Request inválido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: Saldo insuficiente o regla de negocio violada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+              type: string
+              format: date
+            description: Fecha desde (YYYY-MM-DD)
+          - in: query
+            name: fechaHasta
+            schema:
+              type: string
+              format: date
+            description: Fecha hasta (YYYY-MM-DD)
+          - in: query
+            name: page
+            schema:
+              type: integer
+              default: 0
+          - in: query
+            name: size
+            schema:
+              type: integer
+              default: 50
+        responses:
+          '200':
+            description: Lista de transacciones
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Transaccion'
+          '400':
+            description: Parámetros inválidos
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
 
-  /transacciones/historial:
-    get:
-      tags: ["Transacciones"]
-      summary: Consulta historial de transacciones (opcional filtrar por cuenta/tipo/fechas)
-      parameters:
-        - in: query
-          name: cuentaId
-          schema:
+  components:
+    schemas:
+      Transaccion:
+        type: object
+        properties:
+          id:
             type: string
-          description: Filtrar por cuenta (origen o destino)
-        - in: query
-          name: tipo
-          schema:
+            description: Identificador único de la transacción
+          type:
             type: string
             enum: [DEPOSITO, RETIRO, TRANSFERENCIA]
-          description: Filtrar por tipo de transacción
-        - in: query
-          name: fechaDesde
-          schema:
+          amount:
+            type: number
+            format: double
+          date:
             type: string
-            format: date
-          description: Fecha desde (YYYY-MM-DD)
-        - in: query
-          name: fechaHasta
-          schema:
+            format: date-time
+          originAccountNumber:
             type: string
-            format: date
-          description: Fecha hasta (YYYY-MM-DD)
-        - in: query
-          name: page
-          schema:
-            type: integer
-            default: 0
-        - in: query
-          name: size
-          schema:
-            type: integer
-            default: 50
-      responses:
-        '200':
-          description: Lista de transacciones
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Transaccion'
-        '400':
-          description: Parámetros inválidos
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+            nullable: true
+            description: Cuenta de origen (null para depósitos)
+          DestinationAccountNumber:
+            type: string
+            nullable: true
+            description: Cuenta de destino (null para retiros)
+        required: [id, tipo, monto, fecha]
 
-components:
-  schemas:
-    Transaccion:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Identificador único de la transacción
-        tipo:
-          type: string
-          enum: [DEPOSITO, RETIRO, TRANSFERENCIA]
-        monto:
-          type: number
-          format: double
-        fecha:
-          type: string
-          format: date-time
-        cuentaOrigenId:
-          type: string
-          nullable: true
-          description: Cuenta de origen (null para depósitos)
-        cuentaDestinoId:
-          type: string
-          nullable: true
-          description: Cuenta de destino (null para retiros)
-      required: [id, tipo, monto, fecha]
+      DepositoRequest:
+        type: object
+        properties:
+          accountNumber:
+            type: string
+            description: Cuenta destino del depósito
+          amount:
+            type: number
+            format: double
+            minimum: 0.01
+        required: [cuentaId, monto]
 
-    DepositoRequest:
-      type: object
-      properties:
-        cuentaId:
-          type: string
-          description: Cuenta destino del depósito
-        monto:
-          type: number
-          format: double
-          minimum: 0.01
-      required: [cuentaId, monto]
+      RetiroRequest:
+        type: object
+        properties:
+          accountNumber:
+            type: string
+            description: Cuenta origen del retiro
+          amount:
+            type: number
+            format: double
+            minimum: 0.01
+        required: [cuentaId, monto]
 
-    RetiroRequest:
-      type: object
-      properties:
-        cuentaId:
-          type: string
-          description: Cuenta origen del retiro
-        monto:
-          type: number
-          format: double
-          minimum: 0.01
-      required: [cuentaId, monto]
+      TransferenciaRequest:
+        type: object
+        properties:
+          originAccountNumber:
+            type: string
+          destinationAccountNumber:
+            type: string
+          amount:
+            type: number
+            format: double
+            minimum: 0.01
+        required: [originAccountNumber, destinationAccountNumber, amount]
 
-    TransferenciaRequest:
-      type: object
-      properties:
-        cuentaOrigenId:
-          type: string
-        cuentaDestinoId:
-          type: string
-        monto:
-          type: number
-          format: double
-          minimum: 0.01
-      required: [cuentaOrigenId, cuentaDestinoId, monto]
-
-    ErrorResponse:
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-        details:
-          type: object
-      required: [code, message]
+      ErrorResponse:
+        type: object
+        properties:
+          code:
+            type: string
+          message:
+            type: string
+          details:
+            type: object
+        required: [code, message]
