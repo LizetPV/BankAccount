@@ -12,7 +12,7 @@
 	<artifactId>transaction-ms</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>transaction-ms</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Transaction Microservice</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -92,7 +92,32 @@
 					</excludes>
 				</configuration>
 			</plugin>
-		</plugins>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>7.4.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-spring</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/openapi/openapi.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <library>spring-boot</library>
+                            <output>${project.basedir}/target/generated-sources/openapi</output>
+                            <apiPackage>com.taller.product.api</apiPackage>
+                            <modelPackage>com.taller.product.model</modelPackage>
+                            <configOptions>
+                                <interfaceOnly>true</interfaceOnly>
+                                <useSpringBoot3>true</useSpringBoot3>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
 	</build>
 
 </project>
