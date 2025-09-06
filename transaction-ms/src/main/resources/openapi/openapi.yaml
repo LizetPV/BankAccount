@@ -22,7 +22,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DepositRequest'
+              $ref: '#/components/schemas/DepositRequestDto'
             examples:
               example1:
                 value:
@@ -34,19 +34,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Transaction'
+                $ref: '#/components/schemas/TransactionDto'
         '400':
           description: Request inválido
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponseDto'
         '422':
           description: Por regla de negocio (ej. monto <= 0)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponseDto'
 
   /transacciones/retiro:
     post:
@@ -58,7 +58,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WithdrawalRequest'
+              $ref: '#/components/schemas/WithdrawalRequestDto'
             examples:
               example1:
                 value:
@@ -70,20 +70,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Transaction'
+                $ref: '#/components/schemas/TransactionDto'
         '400':
           description: Request inválido
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponseDto'
         '422':
           description: Saldo insuficiente o regla de negocio violada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
+                $ref: '#/components/schemas/ErrorResponseDto'
   /transacciones/transferencia:
     post:
       operationId: transferTransaction
@@ -94,7 +93,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TransferRequest'
+              $ref: '#/components/schemas/TransferRequestDto'
             examples:
               example1:
                 value:
@@ -107,19 +106,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Transaction'
+                $ref: '#/components/schemas/TransactionDto'
         '400':
           description: Request inválido
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponseDto'
         '422':
           description: Saldo insuficiente o regla de negocio violada
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponseDto'
 
   /transacciones/historial:
     get:
@@ -158,13 +157,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TransactionPage'
+                $ref: '#/components/schemas/TransactionPageDto'
         '400':
           description: Parámetros inválidos
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponseDto'
 
 components:
   parameters:
@@ -185,7 +184,7 @@ components:
         default: 10
 
   schemas:
-    Transaction:
+    TransactionDto:
       type: object
       properties:
         id:
@@ -210,13 +209,13 @@ components:
           description: Cuenta de destino (null para retiros)
       required: [ id, type, amount, date ]
 
-    TransactionPage:
+    TransactionPageDto:
       type: object
       properties:
         content:
           type: array
           items:
-            $ref: '#/components/schemas/Transaction'
+            $ref: '#/components/schemas/TransactionDto'
         totalElements:
           type: integer
           format: int64
@@ -233,7 +232,7 @@ components:
           type: boolean
       required: [content, totalElements, totalPages]
 
-    DepositRequest:
+    DepositRequestDto:
       type: object
       properties:
         accountNumber:
@@ -245,7 +244,7 @@ components:
           minimum: 0.01
       required: [accountNumber, amount]
 
-    WithdrawalRequest:
+    WithdrawalRequestDto:
       type: object
       properties:
         accountNumber:
@@ -257,7 +256,7 @@ components:
           minimum: 0.01
       required: [accountNumber, amount]
 
-    TransferRequest:
+    TransferRequestDto:
       type: object
       properties:
         originAccountNumber:
@@ -270,7 +269,7 @@ components:
           minimum: 0.01
       required: [originAccountNumber, destinationAccountNumber, amount]
 
-    ErrorResponse:
+    ErrorResponseDto:
       type: object
       properties:
         code:
