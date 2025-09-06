@@ -1,6 +1,19 @@
 spring:
+  application:
+    name: transaction-ms
   data:
     mongodb:
       host: localhost
       port: 27017
       database: transaction
+
+server:
+  port: 8083
+
+account:
+  service:
+    url: http://localhost:8082
+
+springdoc:
+  swagger-ui:
+    url: /openapi/openapi.yaml
