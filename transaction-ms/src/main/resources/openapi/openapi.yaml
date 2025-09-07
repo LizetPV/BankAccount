@@ -127,7 +127,7 @@ paths:
       summary: Consulta historial de transacciones (opcional filtrar por cuenta/tipo/fechas)
       parameters:
         - in: query
-          name: cuentaId
+          name: Numero de Cuenta
           schema:
             type: string
           description: Filtrar por cuenta (origen o destino)

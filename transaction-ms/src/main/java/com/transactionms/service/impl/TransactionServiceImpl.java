@@ -111,11 +111,11 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Flux<Transaction> history(String cuentaId, String tipo, LocalDate fechaDesde, LocalDate fechaHasta) {
+    public Flux<Transaction> history(String cuentaNumero, String tipo, LocalDate fechaDesde, LocalDate fechaHasta) {
         Flux<Transaction> baseFlux;
 
-        if (cuentaId != null) {
-            baseFlux = repository.findByAccountFromOrAccountToOrderByDateDesc(cuentaId, cuentaId);
+        if (cuentaNumero != null) {
+            baseFlux = repository.findByAccountFromOrAccountToOrderByDateDesc(cuentaNumero,cuentaNumero);
         } else {
             baseFlux = repository.findAll();
         }

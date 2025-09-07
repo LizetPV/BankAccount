@@ -49,11 +49,11 @@ public class TransactionController {
     @Operation(summary = "Consultar historial de transacciones")
     @GetMapping("/historial")
     public Flux<TransactionDto> history(
-            @RequestParam(required = false) String cuentaId,
+            @RequestParam(required = false) String numeroCuenta,
             @RequestParam(required = false) String tipo,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaDesde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaHasta) {
-        return service.history(cuentaId, tipo, fechaDesde, fechaHasta)
+        return service.history(numeroCuenta, tipo, fechaDesde, fechaHasta)
                 .map(TransactionDto::fromEntity);
     }
 }
