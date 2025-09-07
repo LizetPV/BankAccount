@@ -12,8 +12,13 @@ server:
 
 account:
   service:
-    url: http://localhost:8082
+    url: http://localhost:8082/api/v1/cuentas
 
 springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
   swagger-ui:
-    url: /openapi/openapi.yaml
+    enabled: true
+    path: /swagger-ui.html
+

@@ -84,6 +84,28 @@ public class AccountController implements CuentasApi {
         return ResponseEntity.ok(service.totalBalanceAsync(customerId).join());
     }
 
+    @Override
+    public ResponseEntity<AccountDto> getAccountByNumber(String accountNumber) {
+        return ResponseEntity.ok(toDto(service.getByAccountNumber(accountNumber)));
+    }
+
+    @Override
+    public ResponseEntity<AccountDto> depositByAccountNumber(String accountNumber, AmountDto body) {
+        var updated = service.depositByNumber(accountNumber,
+                new com.bank.accountms.api.dto.AccountDtos.AmountDto(body.getAmount())
+        );
+        return ResponseEntity.ok(toDto(updated));
+    }
+
+    @Override
+    public ResponseEntity<AccountDto> withdrawByAccountNumber(String accountNumber, AmountDto body) {
+        var updated = service.withdrawByNumber(accountNumber,
+                new com.bank.accountms.api.dto.AccountDtos.AmountDto(body.getAmount())
+        );
+        return ResponseEntity.ok(toDto(updated));
+    }
+
+
     // ---- helpers ----
     private AccountDto toDto(Account a) {
         AccountDto dto = new AccountDto();

@@ -122,8 +122,8 @@
                             <generatorName>spring</generatorName>
                             <library>spring-boot</library>
                             <output>${project.build.directory}/generated-sources/openapi</output>
-                            <apiPackage>com.transaction_ms.api</apiPackage>
-                            <modelPackage>com.transaction_ms.model</modelPackage>
+                            <apiPackage>com.transactionms.api</apiPackage>
+                            <modelPackage>com.transactionms.model</modelPackage>
                             <configOptions>
                                 <interfaceOnly>true</interfaceOnly>
                                 <useSpringBoot3>true</useSpringBoot3>
