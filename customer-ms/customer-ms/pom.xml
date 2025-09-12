@@ -88,18 +88,7 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
+
             <!-- OpenAPI Generator (contract-first) -->
             <plugin>
                 <groupId>org.openapitools</groupId>
@@ -119,7 +108,6 @@
                             <modelPackage>com.bank.customerms.contract.model</modelPackage>
                             <invokerPackage>com.bank.customerms.contract.invoker</invokerPackage>
 
-                            <!-- para que NO genere un controller concreto -->
                             <configOptions>
                                 <useSpringBoot3>true</useSpringBoot3>
                                 <useJakartaEe>true</useJakartaEe>
@@ -131,9 +119,7 @@
                                 <delegatePattern>false</delegatePattern>
                             </configOptions>
 
-                            <!-- (opcional) si quieres ignorar archivos extra -->
                             <ignoreFileOverride>${project.basedir}/src/main/resources/openapi/.openapi-generator-ignore</ignoreFileOverride>
-
                             <skipValidateSpec>false</skipValidateSpec>
                             <generateApiTests>false</generateApiTests>
                             <generateModelTests>false</generateModelTests>
@@ -143,6 +129,21 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Compiler ( fija release=17) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>17</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <!-- Spring Boot  -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -150,6 +151,7 @@
                     <mainClass>${start-class}</mainClass>
                 </configuration>
             </plugin>
+
 		</plugins>
 	</build>
 

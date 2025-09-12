@@ -86,4 +86,31 @@ public class AccountService {
         }
         return repo.findByCustomerId(customerId, pageable);
     }
+
+    public Account getByAccountNumber(String accountNumber) {
+        return repo.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new NoSuchElementException("Account not found: " + accountNumber));
+    }
+
+    public Account depositByNumber(String accountNumber, AmountDto dto) {
+        if (dto.amount() <= 0) throw new IllegalArgumentException("Amount must be > 0");
+        var acc = getByAccountNumber(accountNumber);
+        acc.setBalance(acc.getBalance() + dto.amount());
+        return repo.save(acc);
+    }
+
+    public Account withdrawByNumber(String accountNumber, AmountDto dto) {
+        if (dto.amount() <= 0) throw new IllegalArgumentException("Amount must be > 0");
+        var acc = getByAccountNumber(accountNumber);
+        double candidate = acc.getBalance() - dto.amount();
+        if (acc.getAccountType() == Account.AccountType.SAVINGS) {
+            if (candidate < 0) throw new IllegalStateException("Savings cannot be negative");
+        } else { // CHECKING
+            if (candidate < OVERDRAFT_LIMIT) throw new IllegalStateException("Checking overdraft limit exceeded (-500.00)");
+        }
+        acc.setBalance(candidate);
+        return repo.save(acc);
+    }
+
+
 }

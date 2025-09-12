@@ -39,6 +39,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/AccountDto' }
+        '400': { description: Datos inválidos }
 
   /api/v1/cuentas/{id}:
     get:
@@ -56,6 +57,7 @@ paths:
       parameters: [ { $ref: '#/components/parameters/IdPath' } ]
       responses:
         '204': { description: Eliminado }
+        '404': { description: No encontrado }
 
   /api/v1/cuentas/{id}/depositar:
     put:
@@ -70,6 +72,8 @@ paths:
             schema: { $ref: '#/components/schemas/AmountDto' }
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AccountDto' } } } }
+        '404': { description: Cuenta no encontrada }
+        '400': { description: Datos inválidos }
 
   /api/v1/cuentas/{id}/retirar:
     put:
@@ -84,7 +88,8 @@ paths:
             schema: { $ref: '#/components/schemas/AmountDto' }
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AccountDto' } } } }
-        '400': { description: Regla de negocio }
+        '404': { description: Cuenta no encontrada }
+        '422': { description: Saldo insuficiente o regla de negocio }
 
   /api/v1/cuentas/total-balance:
     get:
@@ -102,6 +107,69 @@ paths:
           content:
             application/json:
               schema: { type: number, format: double }
+
+  /api/v1/cuentas/ByNumber/{accountNumber}:
+    get:
+      tags: [ Cuentas ]
+      operationId: getAccountByNumber
+      summary: Obtener cuenta por número
+      parameters:
+        - in: path
+          name: accountNumber
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountDto' }
+        '404': { description: No encontrado }
+
+  /api/v1/cuentas/ByNumber/{accountNumber}/depositar:
+    put:
+      tags: [ Cuentas ]
+      operationId: depositByAccountNumber
+      summary: Depositar en cuenta por número
+      parameters:
+        - in: path
+          name: accountNumber
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AmountDto' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountDto' }
+
+  /api/v1/cuentas/ByNumber/{accountNumber}/retirar:
+    put:
+      tags: [ Cuentas ]
+      operationId: withdrawByAccountNumber
+      summary: Retirar de cuenta por número
+      parameters:
+        - in: path
+          name: accountNumber
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AmountDto' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountDto' }
+        '400': { description: Fondos insuficientes }
 
 components:
   parameters:

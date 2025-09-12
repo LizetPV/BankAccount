@@ -1,88 +1,85 @@
-# 🏦 Bank System - Proyecto II (Microservicios)
+# 🏦 Bank System - Proyecto III (Microservicios Escalables)
 
-El **Bank System** es un sistema de gestión bancaria diseñado con una arquitectura de **microservicios**, desarrollado en el marco del **Bootcamp Tech Girls Power de NTTDATA**. Este proyecto amplía las funcionalidades de gestión de clientes y cuentas bancarias para operar en un entorno distribuido, haciendo un fuerte énfasis en la **arquitectura, la documentación y las buenas prácticas de desarrollo**.
+El **Bank System - Proyecto III** es la evolución del sistema bancario desarrollado en el **Bootcamp Tech Girls Power de NTTDATA**, esta vez con un enfoque en **escalabilidad, programación reactiva y bases de datos NoSQL**.  
 
----
-
-## Arquitectura del Sistema
-
-La solución se compone de dos microservicios principales que se comunican para gestionar las operaciones bancarias:
-
-* **`Customer-MS`**: Microservicio encargado de la **gestión de clientes**. Expone todos los endpoints CRUD (Crear, Leer, Actualizar, Eliminar) para los datos del cliente.
-* **`Account-MS`**: Microservicio dedicado a la **gestión de cuentas bancarias** y la ejecución de transacciones, como depósitos y retiros.
-
-Para una mejor comprensión de la arquitectura, se han incluido los siguientes diagramas en la carpeta `diagrams`:
-* **[Diagrama de Componentes](https://github.com/LizetPV/BankAccount/tree/entregable2/documentation/UMLdiagrams/Diagrama%20de%20Componentes)**: Ilustra la estructura de los microservicios y sus interacciones.
-* **[Diagrama de Secuencia](https://github.com/LizetPV/BankAccount/tree/entregable2/documentation/UMLdiagrams/Diagramas%20de%20Secuencias)**: Detalla el flujo de comunicación entre los servicios para operaciones clave.
+El objetivo es implementar la **gestión de transacciones bancarias** (depósitos, retiros y transferencias) bajo una arquitectura de **microservicios**, utilizando **Spring WebFlux** y **MongoDB** para garantizar un sistema eficiente, reactivo y altamente escalable.
 
 ---
 
-## Tecnologías y Herramientas
+## 📂 Documentación
 
-* **Spring Boot**: Framework principal para el desarrollo de la API.
-* **Java 11/17**: Lenguaje de programación, haciendo uso de conceptos de **Programación Funcional**.
-* **OpenAPI (OpenApi Specification 3.0.3)**: Usado para documentar el contrato de la API, siguiendo un enfoque **`Contract-First`**.
-* **MySQL**: Base de datos relacional para la persistencia de datos.
-* **JPA / Hibernate**: Para el mapeo y la gestión de la persistencia de datos.
-* **Maven**: Herramienta de gestión de dependencias.
-* **Git**: Para el control de versiones del proyecto.
-* **Postman**: Utilizado para las pruebas de los endpoints de la API.
+Dentro de la carpeta [`documentation`](./documentation) se incluyen los artefactos del proyecto:  
+
+### UMLdiagrams
+
+#### Diagrama de Componentes
+- [Diagrama de Componentes - Transacciones.png](./documentation/UMLdiagrams/Diagrama%20de%20Componentes/Diagrama%20de%20Componentes%20-%20Transacciones.png)
+
+#### Diagramas de Secuencias
+- [Consulta de historial de transacciones - Diagrama de secuencia.png](./documentation/UMLdiagrams/Diagramas%20de%20Secuencias/Consulta%20de%20historial%20de%20transacciones-%20Diagrama%20de%20secuencia.png)
+- [Registro de Depósito - Diagrama de secuencia.png](./documentation/UMLdiagrams/Diagramas%20de%20Secuencias/Registro%20de%20Deposito%20-%20Diagrama%20de%20secuencia.png)
+- [Registro de Retiro - Diagrama de secuencia.png](./documentation/UMLdiagrams/Diagramas%20de%20Secuencias/Registro%20de%20Retiro%20-%20Diagrama%20de%20secuencia.png)
+- [Registro de Transferencia - Diagrama de secuencia.png](./documentation/UMLdiagrams/Diagramas%20de%20Secuencias/Registro%20de%20Transferencia%20-%20Diagrama%20de%20secuencia.png)
 
 ---
 
-## Endpoints de la API
+## ⚙️ Tecnologías y Herramientas
 
-Ambos microservicios exponen sus funcionalidades a través de **endpoints RESTful**. La documentación completa se encuentra en los archivos de especificación OpenAPI de cada servicio.
+- **Spring Boot** → Framework base de los microservicios.  
+- **Java 11/17** → Lenguaje principal, aplicando **POO, programación funcional y reactiva**.  
+- **Spring WebFlux** → Para desarrollo reactivo y manejo de peticiones no bloqueantes.  
+- **MySQL** → Base de datos relacional para el microservicio de cuentas (`account-ms`).  
+- **MongoDB** → Base de datos NoSQL para el microservicio de transacciones (`transaction-ms`).  
+- **Lombok** → Para reducir código repetitivo (constructores, getters/setters, builders).  
+- **OpenAPI (Swagger 3.0.3)** → Documentación de la API bajo enfoque **Contract-First**.  
+- **Maven** → Gestión de dependencias.  
+- **Git** → Control de versiones.  
+- **Postman** → Validación de los endpoints.  
 
-### **`Customer-MS` - Gestión de Clientes**
+---
+
+## 📌 Endpoints de la API
+
+### `Transaction-MS` - Gestión de Transacciones
 
 | Método | Endpoint | Descripción |
-| :--- | :--- | :--- |
-| `POST` | `/clientes` | Crea un nuevo cliente. |
-| `GET` | `/clientes` | Lista todos los clientes registrados. |
-| `GET` | `/clientes/{id}` | Obtiene los detalles de un cliente específico. |
-| `PUT` | `/clientes/{id}` | Actualiza la información de un cliente. |
-| `DELETE` | `/clientes/{id}` | Elimina un cliente. **Regla:** No se puede eliminar si tiene cuentas asociadas. |
-
-### **`Account-MS` - Gestión de Cuentas**
-
-| Método | Endpoint | Descripción |
-| :--- | :--- | :--- |
-| `POST` | `/cuentas` | Crea una nueva cuenta bancaria para un cliente. |
-| `GET` | `/cuentas` | Lista todas las cuentas bancarias. |
-| `GET` | `/cuentas/{id}` | Obtiene los detalles de una cuenta específica. |
-| `PUT` | `/cuentas/{id}/depositar` | Realiza un depósito en la cuenta. |
-| `PUT` | `/cuentas/{id}/retirar` | Realiza un retiro de la cuenta. **Regla:** Las cuentas de ahorro no pueden tener saldo negativo. Las cuentas corrientes permiten un sobregiro de hasta -500. |
-| `DELETE` | `/cuentas/{id}` | Elimina una cuenta bancaria. |
+|--------|----------|-------------|
+| `POST` | `/transacciones/deposito` | Registra un depósito en una cuenta. |
+| `POST` | `/transacciones/retiro` | Registra un retiro de una cuenta (con validación de saldo). |
+| `POST` | `/transacciones/transferencia` | Registra una transferencia entre dos cuentas. |
+| `GET` | `/transacciones/historial` | Consulta el historial completo de transacciones. |
 
 ---
 
-## ¿Cómo ponerlo en marcha?
+## 📋 Reglas de Negocio
 
-1.  **Clona el repositorio:**
+- Los depósitos y retiros se aplican a **cuentas existentes** en `Account-MS`.  
+- Las transferencias requieren **cuenta de origen, cuenta destino y monto**.  
+- No se permiten retiros ni transferencias si el **saldo disponible es insuficiente**.  
+- Cada transacción se registra en MongoDB como un **documento con información completa**:  
+  - Tipo (Depósito, Retiro, Transferencia)  
+  - Monto  
+  - Fecha  
+  - Cuenta de origen y cuenta de destino (si aplica)  
+
+---
+
+## ▶️ ¿Cómo ponerlo en marcha?
+
+Para iniciar el proyecto, sigue estos sencillos pasos:
+
+1.  **Clona el repositorio** en tu máquina local. Abre la terminal o el símbolo del sistema y ejecuta el siguiente comando:
+
     ```bash
-    git clone https://github.com/LizetPV/BankAccount.git
-    cd BankAccount
+    git clone  https://github.com/LizetPV/BankAccount.git
     ```
-2.  **Configura la base de datos:**
-    * Asegúrate de tener un servidor MySQL en funcionamiento.
-    * Crea una base de datos y actualiza las credenciales de conexión en los archivos `application.properties` de `customer-ms` y `account-ms`.
 
-3.  **Ejecuta los microservicios:**
-    * Dirígete a la carpeta de cada servicio y usa Maven:
-        ```bash
-        cd customer-ms
-        mvn spring-boot:run
-        ```
-    * Abre otra terminal para el segundo servicio:
-        ```bash
-        cd account-ms
-        mvn spring-boot:run
-        ```
-    * Alternativamente, puedes ejecutar la aplicación directamente desde tu IDE (IntelliJ, VS Code, etc.).
+2.  **Inicia el servicio `account-ms`**. Este microservicio se ejecuta en el puerto **8082** y utiliza una base de datos **MySQL**. Asegúrate de que tu instancia de MySQL esté en funcionamiento y luego arranca el servicio.
+
+3.  **Inicia el servicio `transactions-ms`**. Este microservicio se ejecuta en el puerto **8083** y utiliza **MongoDB**. Verifica que tu instancia de MongoDB esté activa y luego pon en marcha este servicio.
 
 4.  **Realiza las pruebas:**
-    * Utiliza **Postman** para interactuar con los endpoints. En esta documentación se encuentra el archivo json de la [colección](http://github.com/LizetPV/BankAccount/blob/entregable2/documentation/Entregable2%20-%20Bank%20System.postman_collection.json).
+    * Utiliza **Postman** para interactuar con los endpoints. En esta documentación se encuentra el archivo json de la [colección](/documentation/Entregable%203%20-%20Bank%20System.postman_collection.json).
     * Los servicios se ejecutan en los siguientes puertos:
-        * `Customer-MS`: **`http://localhost:8081`**
         * `Account-MS`: **`http://localhost:8082`**
+        * `Transacction-MS`: **`http://localhost:8083`**

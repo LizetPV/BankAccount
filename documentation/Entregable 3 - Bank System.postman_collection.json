@@ -1,0 +1,157 @@
+{
+	"info": {
+		"_postman_id": "f894f21f-4125-4051-a40b-6514bf9180a1",
+		"name": "Bank System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "47470048",
+		"_collection_link": "https://anais-bustamante-3382540.postman.co/workspace/Anais-Bustamante's-Workspace~530aad22-7137-41bc-8016-3dffcd2d8f61/collection/47470048-f894f21f-4125-4051-a40b-6514bf9180a1?action=share&source=collection_link&creator=47470048"
+	},
+	"item": [
+		{
+			"name": "Registrar un depósito",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"accountNumber\": \"ACC700677669224700\",\r\n  \"amount\": 50\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8083/transacciones/deposito",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"transacciones",
+						"deposito"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Registrar retiro",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"accountNumber\": \"ACC617668682043300\",\r\n  \"amount\": 200\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8083/transacciones/retiro",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"transacciones",
+						"retiro"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Registrar Transferencia",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"originAccountNumber\": \"ACC617668682043300\",\r\n  \"destinationAccountNumber\": \"ACC700677669224700\",\r\n  \"amount\": 300\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8083/transacciones/transferencia",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"transacciones",
+						"transferencia"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar historial de transacciones",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"originAccountNumber\": \"ACC617668682043300\",\r\n  \"destinationAccountNumber\": \"ACC700677669224700\",\r\n  \"amount\": 300\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8083/transacciones/historial?numeroCuenta=ACC700677669224700&tipo=DEPOSIT&fechaDesde=2025-09-06&fechaHasta=2025-09-07",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8083",
+					"path": [
+						"transacciones",
+						"historial"
+					],
+					"query": [
+						{
+							"key": "numeroCuenta",
+							"value": "ACC700677669224700"
+						},
+						{
+							"key": "tipo",
+							"value": "DEPOSIT"
+						},
+						{
+							"key": "fechaDesde",
+							"value": "2025-09-06"
+						},
+						{
+							"key": "fechaHasta",
+							"value": "2025-09-07"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
