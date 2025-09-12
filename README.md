@@ -1,94 +1,88 @@
-# 🏦 Bank System - Proyecto I
+# 🏦 Bank System - Proyecto II (Microservicios)
 
-Este es el primer proyecto del **Bootcamp TGP de NTTDATA**. El objetivo es desarrollar un sistema de gestión bancaria que aplique los principios de **POO**, **Diagramas UML** y **SQL Básico**.
+El **Bank System** es un sistema de gestión bancaria diseñado con una arquitectura de **microservicios**, desarrollado en el marco del **Bootcamp Tech Girls Power de NTTDATA**. Este proyecto amplía las funcionalidades de gestión de clientes y cuentas bancarias para operar en un entorno distribuido, haciendo un fuerte énfasis en la **arquitectura, la documentación y las buenas prácticas de desarrollo**.
 
-## 🚀 Requisitos Cumplidos
+---
 
-  * **POO:** Implementación de las clases de dominio `Customer` y `BankAccount`.
-  * **Diagramas UML:** Se presentan el Diagrama de Clases y el Diagrama de Casos de Uso.
-  * **Persistencia en Memoria:** Datos de clientes y cuentas gestionados con colecciones de Java.
-  * **SQL (Opcional):** Scripts y consultas para MySQL.
-  * **Buenas Prácticas:** Nombres de clases y métodos en inglés, código comentado y uso de Git.
+## Arquitectura del Sistema
 
------
+La solución se compone de dos microservicios principales que se comunican para gestionar las operaciones bancarias:
 
-## 🏗️ Estructura del Proyecto
+* **`Customer-MS`**: Microservicio encargado de la **gestión de clientes**. Expone todos los endpoints CRUD (Crear, Leer, Actualizar, Eliminar) para los datos del cliente.
+* **`Account-MS`**: Microservicio dedicado a la **gestión de cuentas bancarias** y la ejecución de transacciones, como depósitos y retiros.
 
-La estructura del proyecto sigue una arquitectura de capas estándar:
+Para una mejor comprensión de la arquitectura, se han incluido los siguientes diagramas en la carpeta `diagrams`:
+* **[Diagrama de Componentes](https://github.com/LizetPV/BankAccount/tree/entregable2/documentation/UMLdiagrams/Diagrama%20de%20Componentes)**: Ilustra la estructura de los microservicios y sus interacciones.
+* **[Diagrama de Secuencia](https://github.com/LizetPV/BankAccount/tree/entregable2/documentation/UMLdiagrams/Diagramas%20de%20Secuencias)**: Detalla el flujo de comunicación entre los servicios para operaciones clave.
 
-```
-Bank/
-├── .idea/
-├── src/
-│   └── com/
-│       └── bank/
-│           ├── domain/
-│           │   ├── AccountType.java
-│           │   ├── BankAccount.java
-│           │   └── Customer.java
-│           ├── repository/
-│           │   └── memory/
-│           │       ├── BankAccountRepository.java
-│           │       └── CustomerRepository.java
-│           └── service/
-│               ├── BankService.java
-│               └── BankServiceImpl.java
-├── .gitignore
-├── Bank.iml
-├── App.java
-└── README.md
-```
+---
 
------
+## Tecnologías y Herramientas
 
-## 📊 Diagramas UML
+* **Spring Boot**: Framework principal para el desarrollo de la API.
+* **Java 11/17**: Lenguaje de programación, haciendo uso de conceptos de **Programación Funcional**.
+* **OpenAPI (OpenApi Specification 3.0.3)**: Usado para documentar el contrato de la API, siguiendo un enfoque **`Contract-First`**.
+* **MySQL**: Base de datos relacional para la persistencia de datos.
+* **JPA / Hibernate**: Para el mapeo y la gestión de la persistencia de datos.
+* **Maven**: Herramienta de gestión de dependencias.
+* **Git**: Para el control de versiones del proyecto.
+* **Postman**: Utilizado para las pruebas de los endpoints de la API.
 
-### Diagrama de Clases
+---
 
-Muestra la relación de composición entre `Client` y `BankAccount`. Además, muestra las relaciones de asociación y dependencia entre las otras clases
+## Endpoints de la API
 
-![Diagrama de Clases](https://github.com/LizetPV/BankAccount/blob/main/assets/UMLdiagrams/Diagrama%20de%20Clases.png)
+Ambos microservicios exponen sus funcionalidades a través de **endpoints RESTful**. La documentación completa se encuentra en los archivos de especificación OpenAPI de cada servicio.
 
-### Diagrama de Casos de Uso
+### **`Customer-MS` - Gestión de Clientes**
 
-Ilustra las interacciones de los usuarios (`Client`) con el sistema.
+| Método | Endpoint | Descripción |
+| :--- | :--- | :--- |
+| `POST` | `/clientes` | Crea un nuevo cliente. |
+| `GET` | `/clientes` | Lista todos los clientes registrados. |
+| `GET` | `/clientes/{id}` | Obtiene los detalles de un cliente específico. |
+| `PUT` | `/clientes/{id}` | Actualiza la información de un cliente. |
+| `DELETE` | `/clientes/{id}` | Elimina un cliente. **Regla:** No se puede eliminar si tiene cuentas asociadas. |
 
-![Diagrama de Casos de Uso](https://github.com/LizetPV/BankAccount/blob/main/assets/UMLdiagrams/Diagrama%20de%20Caso%20de%20Uso.png)
+### **`Account-MS` - Gestión de Cuentas**
 
-## Assets
+| Método | Endpoint | Descripción |
+| :--- | :--- | :--- |
+| `POST` | `/cuentas` | Crea una nueva cuenta bancaria para un cliente. |
+| `GET` | `/cuentas` | Lista todas las cuentas bancarias. |
+| `GET` | `/cuentas/{id}` | Obtiene los detalles de una cuenta específica. |
+| `PUT` | `/cuentas/{id}/depositar` | Realiza un depósito en la cuenta. |
+| `PUT` | `/cuentas/{id}/retirar` | Realiza un retiro de la cuenta. **Regla:** Las cuentas de ahorro no pueden tener saldo negativo. Las cuentas corrientes permiten un sobregiro de hasta -500. |
+| `DELETE` | `/cuentas/{id}` | Elimina una cuenta bancaria. |
 
-Todas las **imágenes de los diagramas UML** y las **ejecuciones de las consultas SQL** se encuentran en la carpeta [`assets`](./assets):  
-- `assets/UMLdiagrams` → Diagramas UML
-- `assets/SQLQueryExecutions` → Ejecuciones de consultas SQL 
+---
 
-## Scripts
+## ¿Cómo ponerlo en marcha?
 
-Los **scripts SQL** utilizados para crear tablas, insertar datos y realizar consultas se encuentran en la carpeta [`scripts`](./scripts).  
+1.  **Clona el repositorio:**
+    ```bash
+    git clone https://github.com/LizetPV/BankAccount.git
+    cd BankAccount
+    ```
+2.  **Configura la base de datos:**
+    * Asegúrate de tener un servidor MySQL en funcionamiento.
+    * Crea una base de datos y actualiza las credenciales de conexión en los archivos `application.properties` de `customer-ms` y `account-ms`.
 
------
+3.  **Ejecuta los microservicios:**
+    * Dirígete a la carpeta de cada servicio y usa Maven:
+        ```bash
+        cd customer-ms
+        mvn spring-boot:run
+        ```
+    * Abre otra terminal para el segundo servicio:
+        ```bash
+        cd account-ms
+        mvn spring-boot:run
+        ```
+    * Alternativamente, puedes ejecutar la aplicación directamente desde tu IDE (IntelliJ, VS Code, etc.).
 
-## ⚙️ Funcionalidades Principales
-
-  * **Registro de Clientes**
-  * **Apertura de Cuentas Bancarias**
-  * **Transacciones:**
-      * Depósitos
-      * Retiros (con reglas de sobregiro)
-  * **Consulta de Saldo**
-
------
-
-## 🔒 Reglas de Negocio
-
-  * **Clientes:** DNI único y formato de email válido.
-  * **Cuentas:** Número de cuenta único, validación de cliente.
-  * **Transacciones:**
-      * **Ahorros:** No se permite saldo negativo.
-      * **Corriente:** Límite de sobregiro de `-500.00`.
-
------
-
-## 🛠️ Tecnologías
-
-  * **Java 8 y 11**
-  * **UML**
+4.  **Realiza las pruebas:**
+    * Utiliza **Postman** para interactuar con los endpoints. En esta documentación se encuentra el archivo json de la [colección](http://github.com/LizetPV/BankAccount/blob/entregable2/documentation/Entregable2%20-%20Bank%20System.postman_collection.json).
+    * Los servicios se ejecutan en los siguientes puertos:
+        * `Customer-MS`: **`http://localhost:8081`**
+        * `Account-MS`: **`http://localhost:8082`**
