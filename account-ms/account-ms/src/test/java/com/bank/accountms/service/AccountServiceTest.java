@@ -9,6 +9,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -98,4 +100,56 @@ class AccountServiceTest {
         accountService.delete(1L);
         verify(accountRepository).deleteById(1L);
     }
+
+    @Test
+    void testList_ReturnsAllAccounts_WhenCustomerIdIsNull() {
+        Account acc1 = new Account();
+        Account acc2 = new Account();
+        when(accountRepository.findAll()).thenReturn(List.of(acc1, acc2));
+
+        List<Account> result = accountService.list(null);
+
+        assertEquals(2, result.size());
+        verify(accountRepository).findAll();
+        verify(accountRepository, never()).findByCustomerId(anyLong());
+    }
+
+    @Test
+    void testList_ReturnsAccountsForCustomer_WhenCustomerIdIsProvided() {
+        Account acc1 = new Account();
+        Account acc2 = new Account();
+        when(accountRepository.findByCustomerId(123L)).thenReturn(List.of(acc1, acc2));
+
+        List<Account> result = accountService.list(123L);
+
+        assertEquals(2, result.size());
+        verify(accountRepository).findByCustomerId(123L);
+        verify(accountRepository, never()).findAll();
+    }
+    @Test
+    void testTotalBalanceAsync_ReturnsSumOfBalances() throws Exception {
+        Account acc1 = new Account();
+        acc1.setBalance(100.0);
+        Account acc2 = new Account();
+        acc2.setBalance(200.0);
+        when(accountRepository.findByCustomerId(123L)).thenReturn(List.of(acc1, acc2));
+
+        CompletableFuture<Double> future = accountService.totalBalanceAsync(123L);
+        Double result = future.get(); // Wait for completion
+
+        assertEquals(300.0, result);
+        verify(accountRepository).findByCustomerId(123L);
+    }
+
+    @Test
+    void testTotalBalanceAsync_ReturnsZeroWhenNoAccounts() throws Exception {
+        when(accountRepository.findByCustomerId(999L)).thenReturn(List.of());
+
+        CompletableFuture<Double> future = accountService.totalBalanceAsync(999L);
+        Double result = future.get();
+
+        assertEquals(0.0, result);
+        verify(accountRepository).findByCustomerId(999L);
+    }
+    
 }
