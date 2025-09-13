@@ -21,13 +21,14 @@ public class CustomerService {
     private final AccountClient accountClient;
 
     public Customer create(CustomerCreateDto dto) {
-        if (repo.existsByDni(dto.dni())) {
+        var dni = dto.dni().strip();
+        if (repo.existsByDni(dni)) {
             throw new IllegalArgumentException("DNI already exists");
         }
         var c = Customer.builder()
                 .firstName(dto.firstName().strip())
                 .lastName(dto.lastName().strip())
-                .dni(dto.dni().strip())
+                .dni(dni)
                 .email(dto.email().strip())
                 .build();
         return repo.save(c);
