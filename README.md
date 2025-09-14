@@ -62,3 +62,21 @@ mvn test
 ```
 
 Los resultados se mostrarán en la consola y en `target/surefire-reports/`.
+
+---
+
+## ✅ Principios SOLID
+
+### S - _Single Responsibility Principle (Principio de Responsabilidad Única)_
+
+Tanto en el microservicio **Account** como en el **Customer**, cada clase cumple un único propósito:
+
+- **Controllers (`AccountController.java`, `CustomerController.java`)** → exponen los endpoints REST y reciben las solicitudes HTTP.
+- **Services (`AccountService.java`, `CustomerService.java`)** → implementan la lógica de negocio.
+- **Repositories (`AccountRepository.java`, `CustomerRepository.java`)** → encapsulan el acceso a la base de datos.
+- **Entities (`Account.java`, `Customer.java`)** → representan las entidades del dominio *accountms* y *customerms*.
+- **`RestExceptionHandler.java`** → gestiona de manera aislada las excepciones que puedan ocurrir en la capa API.
+
+Esto asegura que cada clase tenga **una sola razón de cambio**, favoreciendo la mantenibilidad y evitando la mezcla de responsabilidades.
+
+---
