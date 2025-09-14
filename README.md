@@ -69,14 +69,14 @@ Los resultados se mostrarán en la consola y en `target/surefire-reports/`.
 
 ### S - *Single Responsibility Principle (Principio de Responsabilidad Única)*
 
-En el microservicio **Account** y en **Customer**, tratamos de que cada clase tenga un único rol:
+En los microservicios **Account** y **Customer**, tratamos de que cada clase tenga un único rol:
 
 * **Controllers (`AccountController.java`, `CustomerController.java`)** → reciben las solicitudes HTTP y llaman a los servicios.
 * **Services (`AccountService.java`, `CustomerService.java`)** → contienen la lógica de negocio.
 * **Repositories (`AccountRepository.java`, `CustomerRepository.java`)** → manejan la comunicación con la base de datos.
 * **Entities (`Account.java`, `Customer.java`)** → representan las tablas o entidades del dominio.
 * **DTOs (`AccountDtos`, `CustomerDtos`)** → definen cómo se envían y reciben los datos.
-* **Mappers (`AccountMapper`)** → convierten entre entidades y DTOs.
+* **Mappers (`AccountMapper`, `CustomerMapper`)** → convierten entre entidades y DTOs.
 * **`RestExceptionHandler.java`** → maneja errores de forma separada.
 
 Con esto, cada clase tiene **una sola razón de cambio** y se evita mezclar responsabilidades.
@@ -103,9 +103,7 @@ El código debería poder **extenderse sin tener que modificar lo que ya existe*
 Este principio dice que **si una clase hereda de otra, debería poder usarse en lugar de la base sin que el programa se rompa**. En el proyecto pasa lo siguiente:
 
 * **Repositorios**: `AccountRepository` y `CustomerRepository` funcionan como `JpaRepository`, por lo que se pueden usar como si fueran ese tipo genérico.
-* **Entidades**: `Account` y `Customer` se pueden usar en los servicios sin problemas.
-* **Servicios**: se podrían cambiar implementaciones de servicios por otras (ej. `AccountService` → `AccountServiceCached`) sin tener que modificar el resto del sistema.
-* **Mappers**: `AccountMapper` devuelve siempre un `AccountDto`, pero podríamos tener otro mapper que haga lo mismo sin romper nada.
+* **Mappers**: `AccountMapper` y `CustomerMapper` convierten entidades (`Account`, `Customer`) en DTOs de manera predecible.
 
 📌 **Ejemplo de nuestro código (AccountRepository):**
 
@@ -116,25 +114,68 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 }
 ```
 
-📌 **Ejemplo de nuestro código con Mapper (AccountMapper):**
+📌 **Ejemplo de nuestro código (CustomerRepository):**
 
 ```java
-public final class AccountMapper {
-    public static AccountDto toDto(Account a) {
-        return new AccountDto(
-            a.getId(),
-            a.getAccountNumber(),
-            a.getBalance(),
-            a.getAccountType().name(),
-            a.getCustomerId()
+public interface CustomerRepository extends JpaRepository<Customer, Long> {
+    boolean existsByDni(String dni);
+    Optional<Customer> findByDni(String dni);
+}
+```
+
+📌 **Ejemplo de nuestro código (CustomerMapper):**
+
+```java
+public class CustomerMapper {
+
+    public static CustomerDto toDto(Customer c) {
+        return new CustomerDto(
+                c.getId(),
+                c.getDni(),
+                c.getName(),
+                c.getEmail()
         );
     }
+
 }
 ```
 
 Esto muestra que nuestras clases se pueden reemplazar sin que el sistema falle, lo cual es justo lo que busca este principio.
 
-📌 **Mejora posible**: crear interfaces para los servicios (ej. `IAccountService`) ayudaría a dejar más claro que en el futuro podríamos sustituir fácilmente una implementación por otra.
+📌 **Mejora posible**: crear interfaces para los servicios (ej. `IAccountService`, `ICustomerService`) ayudaría a dejar más claro que en el futuro podríamos sustituir fácilmente una implementación por otra.
+
+---
+
+### I - *Interface Segregation Principle (Principio de Segregación de Interfaces)*
+
+Este principio indica que **una clase no debería estar obligada a implementar métodos que no necesita**. En nuestro proyecto:
+
+* **Repositorios**: al extender de `JpaRepository`, solo usamos los métodos que realmente necesitamos (`save`, `findAll`, `findById`, etc.). Si queremos funcionalidades adicionales, creamos métodos propios sin cargar la interfaz con operaciones innecesarias.
+* **Servicios**: la clase `AccountService` implementa únicamente la lógica necesaria sin estar forzada a métodos extra.
+
+📌 **Ejemplo de nuestro código (AccountService usando solo lo necesario):**
+
+```java
+@Service
+@RequiredArgsConstructor
+public class AccountService {
+
+    private final AccountRepository repo;
+
+    public Account get(Long id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Account not found"));
+    }
+
+    public void delete(Long id) {
+        repo.deleteById(id);
+    }
+}
+```
+
+En este ejemplo, `AccountService` usa solo lo que necesita del repositorio (`findById`, `deleteById`), sin depender de métodos innecesarios.
+
+📌 **Mejora posible**: definir interfaces de servicios desde el inicio, porque ahora la lógica está directamente en las clases (`AccountService`, `CustomerService`). Si tuviéramos interfaces, el sistema sería más flexible y fácil de probar.
 
 ---
 
@@ -166,8 +207,27 @@ public class AccountService {
     }
 }
 ```
+📌 **Ejemplo de nuestro código (CustomerService con inyección de dependencias):**
 
-Aquí, `AccountService` no crea el repositorio, sino que lo recibe por inyección de dependencias gracias a `@RequiredArgsConstructor`. Eso sigue la idea de este principio.
+```java
+@Service
+@RequiredArgsConstructor
+public class CustomerService {
+
+    private final CustomerRepository repo;
+    private final AccountClient accountClient;
+
+    public void delete(Long id) {
+        var c = get(id);
+        if (accountClient.hasAccounts(c.getId())) {
+            throw new IllegalStateException("Customer has active accounts");
+        }
+        repo.deleteById(id);
+    }
+}
+```
+
+Aquí, los servicios no crean directamente las dependencias, sino que las reciben por inyección gracias a `@RequiredArgsConstructor`.
 
 📌 **Mejora posible**: definir interfaces para los servicios (`IAccountService`, `ICustomerService`) y hacer que los controladores dependan de ellas en lugar de las clases concretas. Esto daría más flexibilidad y facilidad para pruebas unitarias (por ejemplo, usando mocks).
 
