@@ -79,4 +79,16 @@ Tanto en el microservicio **Account** como en el **Customer**, cada clase cumple
 
 Esto asegura que cada clase tenga **una sola razón de cambio**, favoreciendo la mantenibilidad y evitando la mezcla de responsabilidades.
 
+
+### O - *Open/Closed Principle (Principio Abierto/Cerrado)*
+
+El código debe estar **abierto a la extensión**, pero **cerrado a la modificación**. En los microservicios esto se refleja en:
+
+* **Uso de interfaces en los repositorios (ej. `AccountRepository`, `CustomerRepository`)**: se definen como interfaces que heredan de [`JpaRepository`](https://docs.spring.io/spring-data/data-jpa/docs/current/api/org/springframework/data/jpa/repository/JpaRepository.html), lo cual permite extender funcionalidades sin modificar el código existente.
+* **Servicios (`AccountService`, `CustomerService`)** → implementan la lógica de negocio. Ejemplo: en `AccountRepository`, al extender `JpaRepository<Account, Long>`, se heredan métodos como `findAll()`, `findById()`, `save()`, lo que permite demostrar cómo se cumple el principio OCP sin reescribirlos. lógica puede extenderse agregando nuevos métodos o implementaciones sin alterar los ya definidos.
+* **Controladores**: se pueden añadir nuevos endpoints para ampliar la funcionalidad, sin modificar los existentes, manteniendo la compatibilidad.
+* **Patrones aplicables**: por ejemplo, en el código `public interface AccountRepository extends JpaRepository<Account, Long>` se demuestra claramente la herencia de `JpaRepository`; además se puede aplicar el patrón **Strategy** o **Template Method** para extender comportamientos de negocio en operaciones recurrentes (por ejemplo, validaciones o reglas de retiro y depósito), evitando tocar código base.
+
+Este enfoque asegura que el sistema pueda **evolucionar sin riesgo de romper funcionalidades previas**, alineándose con el principio de mantenibilidad.
+
 ---
