@@ -138,26 +138,37 @@ Esto muestra que nuestras clases se pueden reemplazar sin que el sistema falle, 
 
 ---
 
-### I - *Interface Segregation Principle (Principio de Segregación de Interfaces)*
+### D - *Dependency Inversion Principle (Principio de Inversión de Dependencias)*
 
-Este principio indica que **una clase no debería estar obligada a implementar métodos que no necesita**. En nuestro proyecto:
+Este principio busca que el código dependa de **abstracciones (interfaces)** y no de implementaciones concretas. En nuestro proyecto se refleja en:
 
-* **Repositorios**: al extender de `JpaRepository`, solo usamos los métodos que realmente necesitamos (`save`, `findAll`, `findById`, etc.). Si queremos funcionalidades adicionales, creamos métodos propios sin cargar la interfaz con operaciones innecesarias.
-* **Servicios**: podríamos definir interfaces como `IAccountService` o `ICustomerService` que contengan solo los métodos relevantes para cada caso, evitando interfaces gigantes que obliguen a implementar cosas que no se usan.
-* **DTOs y Mappers**: también cumplen este principio, ya que cada uno está enfocado en una transformación específica (entidad ↔ DTO), no en muchas responsabilidades a la vez.
+* **Controladores** dependen de los **servicios**, no de los repositorios directamente.
+* **Servicios** dependen de interfaces como `JpaRepository`, en lugar de implementaciones fijas de base de datos.
 
-📌 Ejemplo de una interfaz para el servicio de cuentas, como posible mejora:
+📌 **Ejemplo de nuestro código (AccountService con inyección de dependencias):**
 
 ```java
-public interface IAccountService {
-    AccountDto createAccount(AccountDto dto);
-    Optional<AccountDto> getAccountById(Long id);
-    List<AccountDto> getAccountsByCustomer(Long customerId);
+@Service
+@RequiredArgsConstructor
+public class AccountService {
+
+    private final AccountRepository repo;
+
+    public Account create(AccountCreateDto dto) {
+        var type = Account.AccountType.valueOf(dto.accountType().toUpperCase());
+        var acc = Account.builder()
+                .accountNumber("ACC" + System.nanoTime())
+                .balance(dto.initialDeposit())
+                .accountType(type)
+                .customerId(dto.customerId())
+                .build();
+        return repo.save(acc);
+    }
 }
 ```
 
-Esto permite que otras implementaciones (ej. `AccountServiceCached`, `AccountServiceRemote`) usen solo lo que necesitan, sin métodos sobrantes.
+Aquí, `AccountService` no crea el repositorio, sino que lo recibe por inyección de dependencias gracias a `@RequiredArgsConstructor`. Eso sigue la idea de este principio.
 
-📌 **Mejora posible**: definir las interfaces de los servicios desde el inicio, porque en este momento las clases (`AccountService`, `CustomerService`) llevan la lógica directamente, sin tener todavía interfaces que actúen como contratos formales. Esto haría más flexible el sistema y facilitaría pruebas unitarias con mocks.
+📌 **Mejora posible**: definir interfaces para los servicios (`IAccountService`, `ICustomerService`) y hacer que los controladores dependan de ellas en lugar de las clases concretas. Esto daría más flexibilidad y facilidad para pruebas unitarias (por ejemplo, usando mocks).
 
 ---
