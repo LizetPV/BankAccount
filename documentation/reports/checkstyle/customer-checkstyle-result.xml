@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="9.3">
+    <file name="\BankAccount\customer-ms\customer-ms\src\main\java\com\bank\customerms\api\CustomerController.java">
+    </file>
+    <file name="\BankAccount\customer-ms\customer-ms\src\main\java\com\bank\customerms\api\dto\CustomerDtos.java">
+    </file>
+    <file name="\BankAccount\customer-ms\customer-ms\src\main\java\com\bank\customerms\api\mapper\CustomerMapper.java">
+    </file>
+    <file name="\BankAccount\customer-ms\customer-ms\src\main\java\com\bank\customerms\api\RestExceptionHandler.java">
+        <error line="9" column="1" severity="warning" message="Orden lexicográfico incorrecto de &apos;java.util.NoSuchElementException&apos; importación. En caso de ser antes de &apos;org.springframework.web.bind.annotation.ExceptionHandler&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+        <error line="9" column="1" severity="warning" message="Separación extra en el grupo de importación antes &apos;java.util.NoSuchElementException&apos;" source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+        <error line="11" column="1" severity="warning" message="Falta el comentario Javadoc." source="com.puppycrawl.tools.checkstyle.checks.javadoc.MissingJavadocTypeCheck"/>
+    </file>
+    <file name="\BankAccount\customer-ms\customer-ms\src\main\java\com\bank\customerms\client\AccountClient.java">
+        <error line="9" column="1" severity="warning" message="Falta el comentario Javadoc." source="com.puppycrawl.tools.checkstyle.checks.javadoc.MissingJavadocTypeCheck"/>
+        <error line="18" severity="warning" message="Primera frase de Javadoc falta un período final." source="com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck"/>
+        <error line="32" column="3" severity="warning" message="Falta el comentario Javadoc." source="com.puppycrawl.tools.checkstyle.checks.javadoc.MissingJavadocTypeCheck"/>
+        <error line="43" column="3" severity="warning" message="Falta el comentario Javadoc." source="com.puppycrawl.tools.checkstyle.checks.javadoc.MissingJavadocTypeCheck"/>
+    </file>
+    <file name="\BankAccount\customer-ms\customer-ms\src\main\java\com\bank\customerms\client\RestClientConfig.java">
+        <error line="7" column="1" severity="warning" message="Falta el comentario Javadoc." source="com.puppycrawl.tools.checkstyle.checks.javadoc.MissingJavadocTypeCheck"/>
+    </file>
+    <file name="\BankAccount\customer-ms\customer-ms\src\main\java\com\bank\customerms\CustomerMicroserviceApplication.java">
+        <error line="6" column="1" severity="warning" message="Falta el comentario Javadoc." source="com.puppycrawl.tools.checkstyle.checks.javadoc.MissingJavadocTypeCheck"/>
+    </file>
+    <file name="\BankAccount\customer-ms\customer-ms\src\main\java\com\bank\customerms\domain\Customer.java">
+        <error line="3" column="27" severity="warning" message="Usar la importación con &apos;.*&apos; debería evitarse - jakarta.persistence.*." source="com.puppycrawl.tools.checkstyle.checks.imports.AvoidStarImportCheck"/>
+        <error line="4" column="14" severity="warning" message="Usar la importación con &apos;.*&apos; debería evitarse - lombok.*." source="com.puppycrawl.tools.checkstyle.checks.imports.AvoidStarImportCheck"/>
+        <error line="6" column="1" severity="warning" message="Falta el comentario Javadoc." source="com.puppycrawl.tools.checkstyle.checks.javadoc.MissingJavadocTypeCheck"/>
+    </file>
+    <file name="\BankAccount\customer-ms\customer-ms\src\main\java\com\bank\customerms\repository\CustomerRepository.java">
+        <error line="5" column="1" severity="warning" message="Orden lexicográfico incorrecto de &apos;org.springframework.data.domain.Page&apos; importación. En caso de ser antes de &apos;org.springframework.data.jpa.repository.JpaRepository&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+        <error line="6" column="1" severity="warning" message="Orden lexicográfico incorrecto de &apos;org.springframework.data.domain.Pageable&apos; importación. En caso de ser antes de &apos;org.springframework.data.jpa.repository.JpaRepository&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+        <error line="7" column="1" severity="warning" message="Orden lexicográfico incorrecto de &apos;java.util.Optional&apos; importación. En caso de ser antes de &apos;org.springframework.data.jpa.repository.JpaRepository&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+        <error line="9" column="1" severity="warning" message="Falta el comentario Javadoc." source="com.puppycrawl.tools.checkstyle.checks.javadoc.MissingJavadocTypeCheck"/>
+        <error line="16" column="3" severity="warning" message="&apos;findByDniContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase&apos; estás en el nivel de sangrado 2, pero esto no es el nivel correcto. Se esperaba el nivel 6." source="com.puppycrawl.tools.checkstyle.checks.indentation.IndentationCheck"/>
+    </file>
+    <file name="\BankAccount\customer-ms\customer-ms\src\main\java\com\bank\customerms\service\CustomerService.java">
+        <error line="7" column="1" severity="warning" message="Orden lexicográfico incorrecto de &apos;com.bank.customerms.client.AccountClient&apos; importación. En caso de ser antes de &apos;com.bank.customerms.repository.CustomerRepository&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+        <error line="10" column="1" severity="warning" message="Orden lexicográfico incorrecto de &apos;org.springframework.data.domain.Page&apos; importación. En caso de ser antes de &apos;org.springframework.stereotype.Service&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+        <error line="11" column="1" severity="warning" message="Orden lexicográfico incorrecto de &apos;org.springframework.data.domain.Pageable&apos; importación. En caso de ser antes de &apos;org.springframework.stereotype.Service&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+        <error line="13" column="1" severity="warning" message="Orden lexicográfico incorrecto de &apos;java.util.List&apos; importación. En caso de ser antes de &apos;org.springframework.stereotype.Service&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+        <error line="13" column="1" severity="warning" message="Separación extra en el grupo de importación antes &apos;java.util.List&apos;" source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+        <error line="14" column="1" severity="warning" message="Orden lexicográfico incorrecto de &apos;java.util.NoSuchElementException&apos; importación. En caso de ser antes de &apos;org.springframework.stereotype.Service&apos;." source="com.puppycrawl.tools.checkstyle.checks.imports.CustomImportOrderCheck"/>
+        <error line="16" column="1" severity="warning" message="Falta el comentario Javadoc." source="com.puppycrawl.tools.checkstyle.checks.javadoc.MissingJavadocTypeCheck"/>
+        <error line="23" column="3" severity="warning" message="Falta el comentario Javadoc." source="com.puppycrawl.tools.checkstyle.checks.javadoc.MissingJavadocMethodCheck"/>
+        <error line="45" column="3" severity="warning" message="Falta el comentario Javadoc." source="com.puppycrawl.tools.checkstyle.checks.javadoc.MissingJavadocMethodCheck"/>
+        <error line="53" column="3" severity="warning" message="Falta el comentario Javadoc." source="com.puppycrawl.tools.checkstyle.checks.javadoc.MissingJavadocMethodCheck"/>
+        <error line="61" column="3" severity="warning" message="Falta el comentario Javadoc." source="com.puppycrawl.tools.checkstyle.checks.javadoc.MissingJavadocMethodCheck"/>
+        <error line="61" column="3" severity="warning" message="Todos los métodos sobrecargados deben colocarse uno al lado del otro. Colocar métodos no sobrecargados entre métodos sobrecargados con el mismo tipo es una violación. Método sobrecargado anterior ubicado en la línea &apos;37 &apos;." source="com.puppycrawl.tools.checkstyle.checks.coding.OverloadMethodsDeclarationOrderCheck"/>
+    </file>
+    <file name="\BankAccount\customer-ms\customer-ms\src\main\resources\application.properties">
+    </file>
+</checkstyle>
