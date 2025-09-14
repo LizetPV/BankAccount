@@ -17,53 +17,59 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class CustomerService {
 
-    private final CustomerRepository repo;
-    private final AccountClient accountClient;
+  private final CustomerRepository repo;
+  private final AccountClient accountClient;
 
-    public Customer create(CustomerCreateDto dto) {
-        var dni = dto.dni().strip();
-        if (repo.existsByDni(dni)) {
-            throw new IllegalArgumentException("DNI already exists");
-        }
-        var c = Customer.builder()
-                .firstName(dto.firstName().strip())
-                .lastName(dto.lastName().strip())
-                .dni(dni)
-                .email(dto.email().strip())
-                .build();
-        return repo.save(c);
+  public Customer create(CustomerCreateDto dto) {
+    var dni = dto.dni().strip();
+    if (repo.existsByDni(dni)) {
+      throw new IllegalArgumentException("DNI already exists");
     }
+    var c = Customer.builder()
+        .firstName(dto.firstName().strip())
+        .lastName(dto.lastName().strip())
+        .dni(dni)
+        .email(dto.email().strip())
+        .build();
+    return repo.save(c);
+  }
 
-    public List<Customer> list() {
-        return repo.findAll();
-    }
+  public List<Customer> list() {
+    return repo.findAll();
+  }
 
-    public Customer get(Long id) {
-        return repo.findById(id).orElseThrow(() -> new NoSuchElementException("Customer not found"));
-    }
+  public Customer get(Long id) {
+    return repo.findById(id).orElseThrow(() -> new NoSuchElementException("Customer not found"));
+  }
 
-    public Customer update(Long id, CustomerUpdateDto dto) {
-        var c = get(id);
-        c.setFirstName(dto.firstName().strip());
-        c.setLastName(dto.lastName().strip());
-        c.setEmail(dto.email().strip());
-        return repo.save(c);
-    }
+  public Customer update(Long id, CustomerUpdateDto dto) {
+    var c = get(id);
+    c.setFirstName(dto.firstName().strip());
+    c.setLastName(dto.lastName().strip());
+    c.setEmail(dto.email().strip());
+    return repo.save(c);
+  }
 
-    public void delete(Long id) {
-        var c = get(id);
-        if (accountClient.hasAccounts(c.getId())) {
-            throw new IllegalStateException("Customer has active accounts");
-        }
-        repo.deleteById(id);
+  public void delete(Long id) {
+    var c = get(id);
+    if (accountClient.hasAccounts(c.getId())) {
+      throw new IllegalStateException("Customer has active accounts");
     }
+    repo.deleteById(id);
+  }
 
-    public Page<Customer> list(String q, Pageable pageable) {
-        if (q == null || q.isBlank()) {
-            return repo.findAll(pageable);
-        }
-        var k = q.strip();
-        return repo.findByDniContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
-                k, k, k, pageable);
+  public Page<Customer> list(String q, Pageable pageable) {
+    if (q == null || q.isBlank()) {
+      return repo.findAll(pageable);
     }
+    var k = q.strip();
+    return repo
+        .findByDniContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+        k,
+        k,
+        k,
+        pageable
+    );
+
+  }
 }
