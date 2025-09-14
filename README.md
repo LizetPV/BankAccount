@@ -172,3 +172,14 @@ Aquí, `AccountService` no crea el repositorio, sino que lo recibe por inyecció
 📌 **Mejora posible**: definir interfaces para los servicios (`IAccountService`, `ICustomerService`) y hacer que los controladores dependan de ellas en lugar de las clases concretas. Esto daría más flexibilidad y facilidad para pruebas unitarias (por ejemplo, usando mocks).
 
 ---
+
+# ✅ Patrones de Diseño
+
+En el proyecto se reflejan algunos patrones aplicados y otros que proponemos como mejora:
+
+* **DTO Pattern (aplicado)**: usamos DTOs (`AccountDto`, `AccountCreateDto`, `AmountDto`, `CustomerDto`, `CustomerCreateDto`, `CustomerUpdateDto`) para separar la representación de los datos de la entidad del dominio.
+* **Mapper/Adapter Pattern (aplicado)**: `AccountMapper` y `CustomerMapper` transforman entre entidades y DTOs.
+* **Singleton (aplicado por Spring)**: los servicios (`AccountService`, `CustomerService`) y repositorios son beans únicos gestionados por el contenedor de Spring.
+* **Strategy Pattern (propuesta de mejora)**: útil para manejar reglas de negocio diferentes según el tipo de cuenta en lugar de condicionales dentro del servicio.
+
+---
