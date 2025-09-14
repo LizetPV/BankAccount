@@ -180,7 +180,8 @@ class CustomerServiceTest {
         // Assert
         assertEquals(1, result.getTotalElements());
         verify(repo).findAll(pageable);
-        verify(repo, never()).findByDniContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+        verify(repo, never())
+            .findByDniContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
                 anyString(), anyString(), anyString(), any());
     }
 
@@ -198,7 +199,8 @@ class CustomerServiceTest {
 
         // Assert
         assertEquals(1, result.getTotalElements());
-        verify(repo).findByDniContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+        verify(repo)
+            .findByDniContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
                 "ana", "ana", "ana", pageable);
         verify(repo, never()).findAll(any(Pageable.class));
     }

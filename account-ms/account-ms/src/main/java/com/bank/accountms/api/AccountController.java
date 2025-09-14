@@ -7,12 +7,18 @@ import com.bank.accountms.contract.model.AccountPage;
 import com.bank.accountms.contract.model.AmountDto;
 import com.bank.accountms.domain.Account;
 import com.bank.accountms.service.AccountService;
-
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controlador REST que expone operaciones sobre cuentas bancarias.
+ */
 @RestController
 @RequiredArgsConstructor
 public class AccountController implements CuentasApi {
@@ -20,7 +26,8 @@ public class AccountController implements CuentasApi {
     private final AccountService service;
 
     @Override
-    public ResponseEntity<AccountPage> listAccounts(Long customerId, Integer page, Integer size, String sort) {
+    public ResponseEntity<AccountPage> listAccounts(
+            Long customerId, Integer page, Integer size, String sort) {
         int p = (page == null || page < 0) ? 0 : page;
         int s = (size == null || size < 1) ? 10 : Math.min(size, 50);
         Sort sortSpec = parseSort(sort);
@@ -36,7 +43,9 @@ public class AccountController implements CuentasApi {
         resp.setFirst(pageDomain.isFirst());
         resp.setLast(pageDomain.isLast());
         resp.setSort(sortSpec.isSorted() ? sortSpec.toString() : "");
-        resp.setContent(pageDomain.getContent().stream().map(this::toDto).toList());
+        resp.setContent(
+                pageDomain.getContent().stream().map(this::toDto).toList()
+        );
 
         return ResponseEntity.ok(resp);
     }
@@ -46,7 +55,7 @@ public class AccountController implements CuentasApi {
         var created = service.create(
                 new com.bank.accountms.api.dto.AccountDtos.AccountCreateDto(
                         body.getCustomerId(),
-                        body.getAccountType().getValue(),   // "SAVINGS" | "CHECKING"
+                        body.getAccountType().getValue(), // "SAVINGS" | "CHECKING"
                         body.getInitialDeposit()
                 )
         );
@@ -66,7 +75,8 @@ public class AccountController implements CuentasApi {
 
     @Override
     public ResponseEntity<AccountDto> deposit(Long id, AmountDto body) {
-        var updated = service.deposit(id,
+        var updated = service.deposit(
+                id,
                 new com.bank.accountms.api.dto.AccountDtos.AmountDto(body.getAmount())
         );
         return ResponseEntity.ok(toDto(updated));
@@ -74,7 +84,8 @@ public class AccountController implements CuentasApi {
 
     @Override
     public ResponseEntity<AccountDto> withdraw(Long id, AmountDto body) {
-        var updated = service.withdraw(id,
+        var updated = service.withdraw(
+                id,
                 new com.bank.accountms.api.dto.AccountDtos.AmountDto(body.getAmount())
         );
         return ResponseEntity.ok(toDto(updated));
@@ -91,23 +102,27 @@ public class AccountController implements CuentasApi {
     }
 
     @Override
-    public ResponseEntity<AccountDto> depositByAccountNumber(String accountNumber, AmountDto body) {
-        var updated = service.depositByNumber(accountNumber,
+    public ResponseEntity<AccountDto> depositByAccountNumber(
+            String accountNumber, AmountDto body) {
+        var updated = service.depositByNumber(
+                accountNumber,
                 new com.bank.accountms.api.dto.AccountDtos.AmountDto(body.getAmount())
         );
         return ResponseEntity.ok(toDto(updated));
     }
 
     @Override
-    public ResponseEntity<AccountDto> withdrawByAccountNumber(String accountNumber, AmountDto body) {
-        var updated = service.withdrawByNumber(accountNumber,
+    public ResponseEntity<AccountDto> withdrawByAccountNumber(
+            String accountNumber, AmountDto body) {
+        var updated = service.withdrawByNumber(
+                accountNumber,
                 new com.bank.accountms.api.dto.AccountDtos.AmountDto(body.getAmount())
         );
         return ResponseEntity.ok(toDto(updated));
     }
 
-
     // ---- helpers ----
+
     private AccountDto toDto(Account a) {
         AccountDto dto = new AccountDto();
         dto.setId(a.getId());
@@ -119,12 +134,17 @@ public class AccountController implements CuentasApi {
     }
 
     private Sort parseSort(String sort) {
-        if (sort == null || sort.isBlank()) return Sort.by(Sort.Direction.DESC, "id");
+        if (sort == null || sort.isBlank()) {
+            return Sort.by(Sort.Direction.DESC, "id");
+        }
         try {
             var parts = sort.split(",", 2);
             var field = parts[0].trim();
             var dir = (parts.length > 1 ? parts[1].trim() : "asc");
-            return Sort.by("desc".equalsIgnoreCase(dir) ? Sort.Direction.DESC : Sort.Direction.ASC, field);
+            return Sort.by(
+                    "desc".equalsIgnoreCase(dir) ? Sort.Direction.DESC : Sort.Direction.ASC,
+                    field
+            );
         } catch (Exception e) {
             return Sort.by(Sort.Direction.DESC, "id");
         }

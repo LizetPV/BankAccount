@@ -4,25 +4,36 @@ import com.bank.accountms.api.dto.AccountDtos.AccountCreateDto;
 import com.bank.accountms.api.dto.AccountDtos.AmountDto;
 import com.bank.accountms.domain.Account;
 import com.bank.accountms.repository.AccountRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
+/**
+ * Servicio que maneja la lógica de negocio relacionada con cuentas.
+ */
 @Service
 @RequiredArgsConstructor
 public class AccountService {
 
-    public static final double OVERDRAFT_LIMIT = -500.00; // checking
+    public static final double OVERDRAFT_LIMIT = -500.00; // límite de sobregiro para checking
+
     private final AccountRepository repo;
 
+    /**
+     * Crea una nueva cuenta bancaria.
+     *
+     * @param dto datos de creación
+     * @return cuenta creada
+     */
     public Account create(AccountCreateDto dto) {
         var type = Account.AccountType.valueOf(dto.accountType().toUpperCase());
-        if (dto.initialDeposit() <= 0) throw new IllegalArgumentException("Initial deposit must be > 0");
+        if (dto.initialDeposit() <= 0) {
+            throw new IllegalArgumentException("Initial deposit must be > 0");
+        }
 
         var acc = Account.builder()
                 .accountNumber(generateNumber())
@@ -38,7 +49,8 @@ public class AccountService {
     }
 
     public Account get(Long id) {
-        return repo.findById(id).orElseThrow(() -> new NoSuchElementException("Account not found"));
+        return repo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Account not found"));
     }
 
     public void delete(Long id) {
@@ -46,21 +58,29 @@ public class AccountService {
     }
 
     public Account deposit(Long id, AmountDto dto) {
-        if (dto.amount() <= 0) throw new IllegalArgumentException("Amount must be > 0");
+        if (dto.amount() <= 0) {
+            throw new IllegalArgumentException("Amount must be > 0");
+        }
         var a = get(id);
         a.setBalance(a.getBalance() + dto.amount());
         return repo.save(a);
     }
 
     public Account withdraw(Long id, AmountDto dto) {
-        if (dto.amount() <= 0) throw new IllegalArgumentException("Amount must be > 0");
+        if (dto.amount() <= 0) {
+            throw new IllegalArgumentException("Amount must be > 0");
+        }
         var a = get(id);
         double candidate = a.getBalance() - dto.amount();
 
         if (a.getAccountType() == Account.AccountType.SAVINGS) {
-            if (candidate < 0) throw new IllegalStateException("Savings cannot be negative");
+            if (candidate < 0) {
+                throw new IllegalStateException("Savings cannot be negative");
+            }
         } else { // CHECKING
-            if (candidate < OVERDRAFT_LIMIT) throw new IllegalStateException("Checking overdraft limit exceeded (-500.00)");
+            if (candidate < OVERDRAFT_LIMIT) {
+                throw new IllegalStateException("Checking overdraft limit exceeded (-500.00)");
+            }
         }
         a.setBalance(candidate);
         return repo.save(a);
@@ -89,28 +109,35 @@ public class AccountService {
 
     public Account getByAccountNumber(String accountNumber) {
         return repo.findByAccountNumber(accountNumber)
-                .orElseThrow(() -> new NoSuchElementException("Account not found: " + accountNumber));
+                .orElseThrow(() -> new NoSuchElementException("Account not found: "
+                        + accountNumber));
     }
 
     public Account depositByNumber(String accountNumber, AmountDto dto) {
-        if (dto.amount() <= 0) throw new IllegalArgumentException("Amount must be > 0");
+        if (dto.amount() <= 0) {
+            throw new IllegalArgumentException("Amount must be > 0");
+        }
         var acc = getByAccountNumber(accountNumber);
         acc.setBalance(acc.getBalance() + dto.amount());
         return repo.save(acc);
     }
 
     public Account withdrawByNumber(String accountNumber, AmountDto dto) {
-        if (dto.amount() <= 0) throw new IllegalArgumentException("Amount must be > 0");
+        if (dto.amount() <= 0) {
+            throw new IllegalArgumentException("Amount must be > 0");
+        }
         var acc = getByAccountNumber(accountNumber);
         double candidate = acc.getBalance() - dto.amount();
         if (acc.getAccountType() == Account.AccountType.SAVINGS) {
-            if (candidate < 0) throw new IllegalStateException("Savings cannot be negative");
+            if (candidate < 0) {
+                throw new IllegalStateException("Savings cannot be negative");
+            }
         } else { // CHECKING
-            if (candidate < OVERDRAFT_LIMIT) throw new IllegalStateException("Checking overdraft limit exceeded (-500.00)");
+            if (candidate < OVERDRAFT_LIMIT) {
+                throw new IllegalStateException("Checking overdraft limit exceeded (-500.00)");
+            }
         }
         acc.setBalance(candidate);
         return repo.save(acc);
     }
-
-
 }

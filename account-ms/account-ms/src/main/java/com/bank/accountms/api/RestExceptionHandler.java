@@ -1,13 +1,15 @@
 package com.bank.accountms.api;
 
+import java.util.NoSuchElementException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.util.NoSuchElementException;
-
+/**
+ * Manejador global de excepciones para la API REST.
+ */
 @ControllerAdvice
 public class RestExceptionHandler {
 
