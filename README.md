@@ -116,7 +116,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 }
 ```
 
-📌 **Ejemplo con Mapper (AccountMapper):**
+📌 **Ejemplo de nuestro código con Mapper (AccountMapper):**
 
 ```java
 public final class AccountMapper {
@@ -135,5 +135,29 @@ public final class AccountMapper {
 Esto muestra que nuestras clases se pueden reemplazar sin que el sistema falle, lo cual es justo lo que busca este principio.
 
 📌 **Mejora posible**: crear interfaces para los servicios (ej. `IAccountService`) ayudaría a dejar más claro que en el futuro podríamos sustituir fácilmente una implementación por otra.
+
+---
+
+### I - *Interface Segregation Principle (Principio de Segregación de Interfaces)*
+
+Este principio indica que **una clase no debería estar obligada a implementar métodos que no necesita**. En nuestro proyecto:
+
+* **Repositorios**: al extender de `JpaRepository`, solo usamos los métodos que realmente necesitamos (`save`, `findAll`, `findById`, etc.). Si queremos funcionalidades adicionales, creamos métodos propios sin cargar la interfaz con operaciones innecesarias.
+* **Servicios**: podríamos definir interfaces como `IAccountService` o `ICustomerService` que contengan solo los métodos relevantes para cada caso, evitando interfaces gigantes que obliguen a implementar cosas que no se usan.
+* **DTOs y Mappers**: también cumplen este principio, ya que cada uno está enfocado en una transformación específica (entidad ↔ DTO), no en muchas responsabilidades a la vez.
+
+📌 Ejemplo de una interfaz para el servicio de cuentas, como posible mejora:
+
+```java
+public interface IAccountService {
+    AccountDto createAccount(AccountDto dto);
+    Optional<AccountDto> getAccountById(Long id);
+    List<AccountDto> getAccountsByCustomer(Long customerId);
+}
+```
+
+Esto permite que otras implementaciones (ej. `AccountServiceCached`, `AccountServiceRemote`) usen solo lo que necesitan, sin métodos sobrantes.
+
+📌 **Mejora posible**: definir las interfaces de los servicios desde el inicio, porque en este momento las clases (`AccountService`, `CustomerService`) llevan la lógica directamente, sin tener todavía interfaces que actúen como contratos formales. Esto haría más flexible el sistema y facilitaría pruebas unitarias con mocks.
 
 ---
