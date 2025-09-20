@@ -12,5 +12,7 @@ public interface TransactionRepository extends ReactiveMongoRepository<Transacti
     Flux<Transaction> findByAccountToOrderByDateDesc(String accountTo);
 
     // Historial completo (origen o destino)
-    Flux<Transaction> findByAccountFromOrAccountToOrderByDateDesc(String accountFrom, String accountTo);
+    Flux<Transaction> findByAccountFromOrAccountToOrderByDateDesc(
+        String accountFrom,
+        String accountTo);
 }

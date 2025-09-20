@@ -32,7 +32,8 @@ public class TransactionServiceImpl implements TransactionService {
 
         // 1️⃣ validar que la cuenta exista en account-ms
         return accountClient.getByAccountNumber(accountNumber)
-                .switchIfEmpty(Mono.error(new AccountNotFoundException("Cuenta destino no encontrada")))
+                .switchIfEmpty(Mono.error(
+                    new AccountNotFoundException("Cuenta destino no encontrada")))
                 // 2️⃣ si existe, invocar depósito en account-ms
                 .flatMap(account ->
                         accountClient.depositByNumberAccount(accountNumber, amount)
@@ -59,7 +60,8 @@ public class TransactionServiceImpl implements TransactionService {
                 .switchIfEmpty(Mono.error(new AccountNotFoundException("Cuenta no encontrada")))
                 .flatMap(account -> {
                     if (account.getBalance() < amount) {
-                        return Mono.error(new InsufficientFundsException("Fondos insuficientes en la cuenta " + accountNumber));
+                        return Mono.error(new InsufficientFundsException(
+                            "Fondos insuficientes en la cuenta " + accountNumber));
                     }
                     return accountClient.withdrawByAccountNumber(accountNumber, amount)
                             .flatMap(updated -> {
@@ -75,22 +77,27 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Mono<Transaction> transfer(String originAccountNumber, String destinationAccountNumber, Double amount) {
+    public Mono<Transaction> transfer(String originAccountNumber,
+        String destinationAccountNumber, Double amount) {
         if (amount <= 0) {
             return Mono.error(new InvalidTransactionException("El monto debe ser mayor a 0"));
         }
         if (originAccountNumber.equals(destinationAccountNumber)) {
-            return Mono.error(new InvalidTransactionException("La cuenta origen y destino no pueden ser iguales"));
+            return Mono.error(new InvalidTransactionException(
+                "La cuenta origen y destino no pueden ser iguales"));
         }
 
         return accountClient.getByAccountNumber(originAccountNumber)
-                .switchIfEmpty(Mono.error(new AccountNotFoundException("Cuenta origen no encontrada")))
+                .switchIfEmpty(Mono.error(new AccountNotFoundException(
+                    "Cuenta origen no encontrada")))
                 .flatMap(origin -> {
                     if (origin.getBalance() < amount) {
-                        return Mono.error(new InsufficientFundsException("Fondos insuficientes en la cuenta" + originAccountNumber));
+                        return Mono.error(new InsufficientFundsException(
+                            "Fondos insuficientes en la cuenta" + originAccountNumber));
                     }
                     return accountClient.getByAccountNumber(destinationAccountNumber)
-                            .switchIfEmpty(Mono.error(new AccountNotFoundException("Cuenta destino no encontrada")))
+                            .switchIfEmpty(Mono.error(new AccountNotFoundException(
+                                "Cuenta destino no encontrada")))
                             // 1️⃣ retirar de origen
                             .flatMap(dest ->
                                     accountClient.withdraw(origin.getId(), amount)
@@ -112,11 +119,13 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Flux<Transaction> history(String cuentaNumero, String tipo, LocalDate fechaDesde, LocalDate fechaHasta) {
+    public Flux<Transaction> history(
+        String cuentaNumero, String tipo, LocalDate fechaDesde, LocalDate fechaHasta) {
         Flux<Transaction> baseFlux;
 
         if (cuentaNumero != null) {
-            baseFlux = repository.findByAccountFromOrAccountToOrderByDateDesc(cuentaNumero,cuentaNumero);
+            baseFlux = repository.findByAccountFromOrAccountToOrderByDateDesc(
+                cuentaNumero,cuentaNumero);
         } else {
             baseFlux = repository.findAll();
         }
@@ -125,9 +134,11 @@ public class TransactionServiceImpl implements TransactionService {
                 .filter(tx -> tipo == null || tx.getType().name().equalsIgnoreCase(tipo))
                 // desde inclusivo: >= 00:00 de fechaDesde
                 .filter(tx -> fechaDesde == null
-                        || !tx.getDate().isBefore(fechaDesde.atStartOfDay().toInstant(ZoneOffset.UTC)))
+                        || !tx.getDate().isBefore(
+                            fechaDesde.atStartOfDay().toInstant(ZoneOffset.UTC)))
                 // hasta inclusivo (fin de día): <= (fechaHasta + 1 día) 00:00
                 .filter(tx -> fechaHasta == null
-                        || !tx.getDate().isAfter(fechaHasta.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)));
+                        || !tx.getDate().isAfter(
+                            fechaHasta.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)));
     }
 }
