@@ -151,5 +151,225 @@ class AccountServiceTest {
         assertEquals(0.0, result);
         verify(accountRepository).findByCustomerId(999L);
     }
-    
+
+  @Test
+  void testDepositByNumber_Success() {
+    Account account = new Account();
+    account.setAccountNumber("ACC123");
+    account.setBalance(100.0);
+    account.setAccountType(Account.AccountType.SAVINGS);
+
+    when(accountRepository.findByAccountNumber("ACC123")).thenReturn(Optional.of(account));
+    when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
+
+    var dto = mock(com.bank.accountms.api.dto.AccountDtos.AmountDto.class);
+    when(dto.amount()).thenReturn(50.0);
+
+    Account result = accountService.depositByNumber("ACC123", dto);
+    assertEquals(150.0, result.getBalance());
+    verify(accountRepository).findByAccountNumber("ACC123");
+  }
+
+  @Test
+  void testWithdrawByNumber_Success() {
+    Account account = new Account();
+    account.setAccountNumber("ACC123");
+    account.setBalance(200.0);
+    account.setAccountType(Account.AccountType.SAVINGS);
+
+    when(accountRepository.findByAccountNumber("ACC123")).thenReturn(Optional.of(account));
+    when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
+
+    var dto = mock(com.bank.accountms.api.dto.AccountDtos.AmountDto.class);
+    when(dto.amount()).thenReturn(50.0);
+
+    Account result = accountService.withdrawByNumber("ACC123", dto);
+    assertEquals(150.0, result.getBalance());
+    verify(accountRepository).findByAccountNumber("ACC123");
+  }
+
+  @Test
+  void testDepositByNumber_ThrowsWhenAmountNonPositive() {
+    var dto = mock(com.bank.accountms.api.dto.AccountDtos.AmountDto.class);
+    when(dto.amount()).thenReturn(0.0);
+
+    assertThrows(IllegalArgumentException.class, () -> accountService.depositByNumber("ACC123", dto));
+  }
+
+  @Test
+  void testWithdrawByNumber_ThrowsWhenAmountNonPositive() {
+    var dto = mock(com.bank.accountms.api.dto.AccountDtos.AmountDto.class);
+    when(dto.amount()).thenReturn(-10.0);
+
+    assertThrows(IllegalArgumentException.class, () -> accountService.withdrawByNumber("ACC123", dto));
+  }
+
+  @Test
+  void testWithdrawByNumber_ThrowsWhenSavingsInsufficient() {
+    Account account = new Account();
+    account.setAccountNumber("ACC123");
+    account.setBalance(50.0);
+    account.setAccountType(Account.AccountType.SAVINGS);
+
+    when(accountRepository.findByAccountNumber("ACC123")).thenReturn(Optional.of(account));
+
+    var dto = mock(com.bank.accountms.api.dto.AccountDtos.AmountDto.class);
+    when(dto.amount()).thenReturn(100.0);
+
+    assertThrows(IllegalStateException.class, () -> accountService.withdrawByNumber("ACC123", dto));
+  }
+
+  @Test
+  void testWithdrawByNumber_ThrowsWhenCheckingExceedsOverdraftLimit() {
+    Account account = new Account();
+    account.setAccountNumber("ACC123");
+    account.setBalance(0.0);
+    account.setAccountType(Account.AccountType.CHECKING);
+
+    when(accountRepository.findByAccountNumber("ACC123")).thenReturn(Optional.of(account));
+
+    var dto = mock(com.bank.accountms.api.dto.AccountDtos.AmountDto.class);
+    when(dto.amount()).thenReturn(600.0); // deja saldo en -600
+
+    assertThrows(IllegalStateException.class, () -> accountService.withdrawByNumber("ACC123", dto));
+  }
+
+  @Test
+  void testWithdrawByNumber_AllowsCheckingOverdraftUpToMinus500() {
+    Account account = new Account();
+    account.setAccountNumber("ACC123");
+    account.setBalance(100.0);
+    account.setAccountType(Account.AccountType.CHECKING);
+
+    when(accountRepository.findByAccountNumber("ACC123")).thenReturn(Optional.of(account));
+    when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
+
+    var dto = mock(com.bank.accountms.api.dto.AccountDtos.AmountDto.class);
+    when(dto.amount()).thenReturn(600.0); // saldo final: -500
+
+    Account result = accountService.withdrawByNumber("ACC123", dto);
+    assertEquals(-500.0, result.getBalance());
+  }
+
+  @Test
+  void testWithdrawByNumber_SavingsWithdrawExactBalance() {
+    Account account = new Account();
+    account.setAccountNumber("ACC123");
+    account.setBalance(100.0);
+    account.setAccountType(Account.AccountType.SAVINGS);
+
+    when(accountRepository.findByAccountNumber("ACC123")).thenReturn(Optional.of(account));
+    when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
+
+    var dto = mock(com.bank.accountms.api.dto.AccountDtos.AmountDto.class);
+    when(dto.amount()).thenReturn(100.0); // saldo quedará en 0
+
+    Account result = accountService.withdrawByNumber("ACC123", dto);
+    assertEquals(0.0, result.getBalance());
+  }
+
+  @Test
+  void testGetByAccountNumber_Success() {
+    Account account = new Account();
+    account.setAccountNumber("ACC123");
+    when(accountRepository.findByAccountNumber("ACC123")).thenReturn(Optional.of(account));
+
+    Account result = accountService.getByAccountNumber("ACC123");
+    assertNotNull(result);
+    assertEquals("ACC123", result.getAccountNumber());
+  }
+
+  @Test
+  void testList_WithPageable_Success() {
+    Account acc1 = new Account();
+    Account acc2 = new Account();
+    var pageable = mock(org.springframework.data.domain.Pageable.class);
+
+    when(accountRepository.findByCustomerId(123L, pageable))
+        .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(acc1, acc2)));
+
+    var result = accountService.list(123L, pageable);
+
+    assertEquals(2, result.getContent().size());
+    verify(accountRepository).findByCustomerId(123L, pageable);
+  }
+
+
+  @Test
+  void testGetByAccountNumber_NotFound() {
+    when(accountRepository.findByAccountNumber("ACC999")).thenReturn(Optional.empty());
+    assertThrows(NoSuchElementException.class, () -> accountService.getByAccountNumber("ACC999"));
+  }
+
+
+  @Test
+    void testCreate_ThrowsWhenInitialDepositIsZero() {
+      var dto = mock(com.bank.accountms.api.dto.AccountDtos.AccountCreateDto.class);
+      when(dto.accountType()).thenReturn("SAVINGS");
+      when(dto.initialDeposit()).thenReturn(0.0);
+      when(dto.customerId()).thenReturn(123L);
+
+      assertThrows(IllegalArgumentException.class, () -> accountService.create(dto));
+    }
+
+    @Test
+    void testWithdraw_ThrowsWhenSavingsInsufficient() {
+      Account account = new Account();
+      account.setId(1L);
+      account.setBalance(50.0);
+      account.setAccountType(Account.AccountType.SAVINGS);
+
+      when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+
+      var dto = mock(com.bank.accountms.api.dto.AccountDtos.AmountDto.class);
+      when(dto.amount()).thenReturn(100.0);
+
+      assertThrows(IllegalStateException.class, () -> accountService.withdraw(1L, dto));
+    }
+
+  @Test
+  void testWithdraw_ThrowsWhenCheckingExceedsOverdraftLimit() {
+    Account account = new Account();
+    account.setId(1L);
+    account.setBalance(0.0);
+    account.setAccountType(Account.AccountType.CHECKING);
+
+    when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+
+    var dto = mock(com.bank.accountms.api.dto.AccountDtos.AmountDto.class);
+    when(dto.amount()).thenReturn(600.0); // Esto dejaría saldo en -600
+
+    assertThrows(IllegalStateException.class, () -> accountService.withdraw(1L, dto));
+  }
+
+  @Test
+  void testWithdraw_AllowsCheckingOverdraftUpToMinus500() {
+    Account account = new Account();
+    account.setId(1L);
+    account.setBalance(100.0);
+    account.setAccountType(Account.AccountType.CHECKING);
+
+    when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+    when(accountRepository.save(any(Account.class))).thenAnswer(i -> i.getArgument(0));
+
+    var dto = mock(com.bank.accountms.api.dto.AccountDtos.AmountDto.class);
+    when(dto.amount()).thenReturn(600.0); // Saldo final: -500
+
+    Account result = accountService.withdraw(1L, dto);
+    assertEquals(-500.0, result.getBalance());
+  }
+
+  @Test
+  void testDeposit_ThrowsWhenAmountNonPositive() {
+    var dto = mock(com.bank.accountms.api.dto.AccountDtos.AmountDto.class);
+    when(dto.amount()).thenReturn(0.0);
+    assertThrows(IllegalArgumentException.class, () -> accountService.deposit(1L, dto));
+  }
+
+  @Test
+  void testGetAccount_NotFound_Throws() {
+    when(accountRepository.findById(99L)).thenReturn(Optional.empty());
+    assertThrows(NoSuchElementException.class, () -> accountService.get(99L));
+  }
+
 }
