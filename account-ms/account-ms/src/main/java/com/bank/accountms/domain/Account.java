@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
+ * aaaaaaaa
  * Entidad que representa una cuenta bancaria.
  */
 @Entity
