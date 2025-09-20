@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 
 @Service
 @RequiredArgsConstructor
@@ -122,7 +123,11 @@ public class TransactionServiceImpl implements TransactionService {
 
         return baseFlux
                 .filter(tx -> tipo == null || tx.getType().name().equalsIgnoreCase(tipo))
-                .filter(tx -> fechaDesde == null || !tx.getDate().isBefore(fechaDesde.atStartOfDay().toInstant(java.time.ZoneOffset.UTC)))
-                .filter(tx -> fechaHasta == null || !tx.getDate().isAfter(fechaHasta.plusDays(1).atStartOfDay().toInstant(java.time.ZoneOffset.UTC)));
+                // desde inclusivo: >= 00:00 de fechaDesde
+                .filter(tx -> fechaDesde == null
+                        || !tx.getDate().isBefore(fechaDesde.atStartOfDay().toInstant(ZoneOffset.UTC)))
+                // hasta inclusivo (fin de día): <= (fechaHasta + 1 día) 00:00
+                .filter(tx -> fechaHasta == null
+                        || !tx.getDate().isAfter(fechaHasta.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)));
     }
 }

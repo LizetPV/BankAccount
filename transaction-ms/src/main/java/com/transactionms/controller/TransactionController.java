@@ -1,4 +1,4 @@
-package com.transactionms.api;
+package com.transactionms.controller;
 
 import com.transactionms.dto.DepositRequestDto;
 import com.transactionms.dto.TransactionDto;
