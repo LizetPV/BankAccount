@@ -1,0 +1,5 @@
+com\transactionms\transactionms\service\TransactionServiceImplTest.class
+com\transactionms\transactionms\api\TransactionControllerTest.class
+com\transactionms\transactionms\client\AccountClientTest.class
+com\transactionms\transactionms\TransactionMsApplicationTests.class
+com\transactionms\transactionms\api\TransactionControllerTest$TestConfig.class

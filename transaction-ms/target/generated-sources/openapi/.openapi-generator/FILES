@@ -1,0 +1,11 @@
+.openapi-generator-ignore
+README.md
+pom.xml
+src/main/java/com/transactionms/controller/ApiUtil.java
+src/main/java/com/transactionms/controller/TransaccionesApi.java
+src/main/java/com/transactionms/model/DepositRequestDto.java
+src/main/java/com/transactionms/model/ErrorResponseDto.java
+src/main/java/com/transactionms/model/TransactionDto.java
+src/main/java/com/transactionms/model/TransactionPageDto.java
+src/main/java/com/transactionms/model/TransferRequestDto.java
+src/main/java/com/transactionms/model/WithdrawalRequestDto.java

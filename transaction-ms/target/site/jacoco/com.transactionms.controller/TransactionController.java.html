@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">transaction-ms</a> &gt; <a href="index.source.html" class="el_package">com.transactionms.controller</a> &gt; <span class="el_source">TransactionController.java</span></div><h1>TransactionController.java</h1><pre class="source lang-java linenums">package com.transactionms.controller;
+
+import com.transactionms.dto.DepositRequestDto;
+import com.transactionms.dto.TransactionDto;
+import com.transactionms.dto.TransferRequestDto;
+import com.transactionms.dto.WithdrawalRequestDto;
+import com.transactionms.service.TransactionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.time.LocalDate;
+
+@RestController
+@RequestMapping(&quot;/transacciones&quot;)
+@Tag(name = &quot;Transacciones&quot;, description = &quot;Endpoints para registrar y consultar transacciones&quot;)
+public class TransactionController {
+
+    private final TransactionService service;
+
+<span class="fc" id="L24">    public TransactionController(TransactionService service) {</span>
+<span class="fc" id="L25">        this.service = service;</span>
+<span class="fc" id="L26">    }</span>
+
+    @Operation(summary = &quot;Registrar un depósito&quot;)
+    @PostMapping(&quot;/deposito&quot;)
+    public Mono&lt;TransactionDto&gt; deposit(@RequestBody DepositRequestDto request) {
+<span class="fc" id="L31">        return service.deposit(request.getAccountNumber(), request.getAmount())</span>
+<span class="fc" id="L32">                .map(TransactionDto::fromEntity);</span>
+    }
+
+    @Operation(summary = &quot;Registrar un retiro&quot;)
+    @PostMapping(&quot;/retiro&quot;)
+    public Mono&lt;TransactionDto&gt; withdraw(@RequestBody WithdrawalRequestDto request) {
+<span class="fc" id="L38">        return service.withdraw(request.getAccountNumber(), request.getAmount())</span>
+<span class="fc" id="L39">                .map(TransactionDto::fromEntity);</span>
+    }
+
+    @Operation(summary = &quot;Registrar una transferencia&quot;)
+    @PostMapping(&quot;/transferencia&quot;)
+    public Mono&lt;TransactionDto&gt; transfer(@RequestBody TransferRequestDto request) {
+<span class="fc" id="L45">        return service.transfer(request.getOriginAccountNumber(), request.getDestinationAccountNumber(), request.getAmount())</span>
+<span class="fc" id="L46">                .map(TransactionDto::fromEntity);</span>
+    }
+
+    @Operation(summary = &quot;Consultar historial de transacciones&quot;)
+    @GetMapping(&quot;/historial&quot;)
+    public Flux&lt;TransactionDto&gt; history(
+            @RequestParam(required = false) String numeroCuenta,
+            @RequestParam(required = false) String tipo,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaDesde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaHasta) {
+<span class="fc" id="L56">        return service.history(numeroCuenta, tipo, fechaDesde, fechaHasta)</span>
+<span class="fc" id="L57">                .map(TransactionDto::fromEntity);</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

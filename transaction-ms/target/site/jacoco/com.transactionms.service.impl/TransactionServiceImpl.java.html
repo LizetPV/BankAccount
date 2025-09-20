@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">transaction-ms</a> &gt; <a href="index.source.html" class="el_package">com.transactionms.service.impl</a> &gt; <span class="el_source">TransactionServiceImpl.java</span></div><h1>TransactionServiceImpl.java</h1><pre class="source lang-java linenums">package com.transactionms.service.impl;
+import com.transactionms.exceptions.AccountNotFoundException;
+import com.transactionms.client.AccountClient;
+import com.transactionms.exceptions.InsufficientFundsException;
+import com.transactionms.exceptions.InvalidTransactionException;
+import com.transactionms.repository.TransactionRepository;
+import com.transactionms.repository.model.Transaction;
+import com.transactionms.repository.model.TransactionType;
+import com.transactionms.service.TransactionService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+
+@Service
+@RequiredArgsConstructor
+public class TransactionServiceImpl implements TransactionService {
+
+    private final TransactionRepository repository;
+    private final AccountClient accountClient; // 👈 inyectamos el cliente
+
+    @Override
+    public Mono&lt;Transaction&gt; deposit(String accountNumber, Double amount) {
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (amount &lt;= 0) {</span>
+<span class="fc" id="L29">            return Mono.error(new InvalidTransactionException(&quot;El monto debe ser mayor a 0&quot;));</span>
+        }
+
+        // 1️⃣ validar que la cuenta exista en account-ms
+<span class="fc" id="L33">        return accountClient.getByAccountNumber(accountNumber)</span>
+<span class="fc" id="L34">                .switchIfEmpty(Mono.error(new AccountNotFoundException(&quot;Cuenta destino no encontrada&quot;)))</span>
+                // 2️⃣ si existe, invocar depósito en account-ms
+<span class="fc" id="L36">                .flatMap(account -&gt;</span>
+<span class="fc" id="L37">                        accountClient.depositByNumberAccount(accountNumber, amount)</span>
+                                // 3️⃣ guardar la transacción en Mongo
+<span class="fc" id="L39">                                .flatMap(updated -&gt; {</span>
+<span class="fc" id="L40">                                    Transaction tx = Transaction.builder()</span>
+<span class="fc" id="L41">                                            .type(TransactionType.DEPOSIT)</span>
+<span class="fc" id="L42">                                            .accountTo(accountNumber)</span>
+<span class="fc" id="L43">                                            .amount(amount)</span>
+<span class="fc" id="L44">                                            .date(Instant.now())</span>
+<span class="fc" id="L45">                                            .build();</span>
+<span class="fc" id="L46">                                    return repository.save(tx);</span>
+                                })
+                );
+    }
+
+    @Override
+    public Mono&lt;Transaction&gt; withdraw(String accountNumber, Double amount) {
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (amount &lt;= 0) {</span>
+<span class="fc" id="L54">            return Mono.error(new InvalidTransactionException(&quot;El monto debe ser mayor a 0&quot;));</span>
+        }
+
+<span class="fc" id="L57">        return accountClient.getByAccountNumber(accountNumber)</span>
+<span class="fc" id="L58">                .switchIfEmpty(Mono.error(new AccountNotFoundException(&quot;Cuenta no encontrada&quot;)))</span>
+<span class="fc" id="L59">                .flatMap(account -&gt; {</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">                    if (account.getBalance() &lt; amount) {</span>
+<span class="fc" id="L61">                        return Mono.error(new InsufficientFundsException(&quot;Fondos insuficientes en la cuenta &quot; + accountNumber));</span>
+                    }
+<span class="fc" id="L63">                    return accountClient.withdrawByAccountNumber(accountNumber, amount)</span>
+<span class="fc" id="L64">                            .flatMap(updated -&gt; {</span>
+<span class="fc" id="L65">                                Transaction tx = Transaction.builder()</span>
+<span class="fc" id="L66">                                        .type(TransactionType.WITHDRAW)</span>
+<span class="fc" id="L67">                                        .accountFrom(accountNumber)</span>
+<span class="fc" id="L68">                                        .amount(amount)</span>
+<span class="fc" id="L69">                                        .date(Instant.now())</span>
+<span class="fc" id="L70">                                        .build();</span>
+<span class="fc" id="L71">                                return repository.save(tx);</span>
+                            });
+                });
+    }
+
+    @Override
+    public Mono&lt;Transaction&gt; transfer(String originAccountNumber, String destinationAccountNumber, Double amount) {
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        if (amount &lt;= 0) {</span>
+<span class="fc" id="L79">            return Mono.error(new InvalidTransactionException(&quot;El monto debe ser mayor a 0&quot;));</span>
+        }
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (originAccountNumber.equals(destinationAccountNumber)) {</span>
+<span class="fc" id="L82">            return Mono.error(new InvalidTransactionException(&quot;La cuenta origen y destino no pueden ser iguales&quot;));</span>
+        }
+
+<span class="fc" id="L85">        return accountClient.getByAccountNumber(originAccountNumber)</span>
+<span class="fc" id="L86">                .switchIfEmpty(Mono.error(new AccountNotFoundException(&quot;Cuenta origen no encontrada&quot;)))</span>
+<span class="fc" id="L87">                .flatMap(origin -&gt; {</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">                    if (origin.getBalance() &lt; amount) {</span>
+<span class="fc" id="L89">                        return Mono.error(new InsufficientFundsException(&quot;Fondos insuficientes en la cuenta&quot; + originAccountNumber));</span>
+                    }
+<span class="fc" id="L91">                    return accountClient.getByAccountNumber(destinationAccountNumber)</span>
+<span class="fc" id="L92">                            .switchIfEmpty(Mono.error(new AccountNotFoundException(&quot;Cuenta destino no encontrada&quot;)))</span>
+                            // 1️⃣ retirar de origen
+<span class="fc" id="L94">                            .flatMap(dest -&gt;</span>
+<span class="fc" id="L95">                                    accountClient.withdraw(origin.getId(), amount)</span>
+                                            // 2️⃣ depositar en destino
+<span class="fc" id="L97">                                            .then(accountClient.deposit(dest.getId(), amount))</span>
+                                            // 3️⃣ guardar la transacción
+<span class="fc" id="L99">                                            .flatMap(updated -&gt; {</span>
+<span class="fc" id="L100">                                                Transaction tx = Transaction.builder()</span>
+<span class="fc" id="L101">                                                        .type(TransactionType.TRANSFER)</span>
+<span class="fc" id="L102">                                                        .accountFrom(originAccountNumber)</span>
+<span class="fc" id="L103">                                                        .accountTo(destinationAccountNumber)</span>
+<span class="fc" id="L104">                                                        .amount(amount)</span>
+<span class="fc" id="L105">                                                        .date(Instant.now())</span>
+<span class="fc" id="L106">                                                        .build();</span>
+<span class="fc" id="L107">                                                return repository.save(tx);</span>
+                                            })
+                            );
+                });
+    }
+
+    @Override
+    public Flux&lt;Transaction&gt; history(String cuentaNumero, String tipo, LocalDate fechaDesde, LocalDate fechaHasta) {
+        Flux&lt;Transaction&gt; baseFlux;
+
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        if (cuentaNumero != null) {</span>
+<span class="fc" id="L118">            baseFlux = repository.findByAccountFromOrAccountToOrderByDateDesc(cuentaNumero,cuentaNumero);</span>
+        } else {
+<span class="fc" id="L120">            baseFlux = repository.findAll();</span>
+        }
+
+<span class="fc" id="L123">        return baseFlux</span>
+<span class="fc bfc" id="L124" title="All 4 branches covered.">                .filter(tx -&gt; tipo == null || tx.getType().name().equalsIgnoreCase(tipo))</span>
+                // desde inclusivo: &gt;= 00:00 de fechaDesde
+<span class="fc bfc" id="L126" title="All 2 branches covered.">                .filter(tx -&gt; fechaDesde == null</span>
+<span class="fc bfc" id="L127" title="All 2 branches covered.">                        || !tx.getDate().isBefore(fechaDesde.atStartOfDay().toInstant(ZoneOffset.UTC)))</span>
+                // hasta inclusivo (fin de día): &lt;= (fechaHasta + 1 día) 00:00
+<span class="fc bfc" id="L129" title="All 2 branches covered.">                .filter(tx -&gt; fechaHasta == null</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">                        || !tx.getDate().isAfter(fechaHasta.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)));</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

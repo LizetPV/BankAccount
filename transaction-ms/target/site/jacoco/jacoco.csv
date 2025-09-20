@@ -1,0 +1,13 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+transaction-ms,com.transactionms.config,MongoConfig,0,11,0,0,0,3,0,3,0,3
+transaction-ms,com.transactionms.config,OpenApiConfig,0,29,0,0,0,10,0,3,0,3
+transaction-ms,com.transactionms.config,WebClientConfig,0,9,0,0,0,2,0,2,0,2
+transaction-ms,com.transactionms.repository.model,TransactionType,0,21,0,0,0,2,0,1,0,1
+transaction-ms,com.transactionms.dto,TransactionDto,0,21,0,0,0,8,0,1,0,1
+transaction-ms,com.transactionms.exceptions,InsufficientFundsException,0,4,0,0,0,2,0,1,0,1
+transaction-ms,com.transactionms.exceptions,AccountNotFoundException,0,4,0,0,0,2,0,1,0,1
+transaction-ms,com.transactionms.exceptions,InvalidTransactionException,0,4,0,0,0,2,0,1,0,1
+transaction-ms,com.transactionms.service.impl,TransactionServiceImpl,0,296,0,26,0,62,0,27,0,14
+transaction-ms,com.transactionms.controller,TransactionController,0,48,0,0,0,11,0,5,0,5
+transaction-ms,com.transactionms.client,AccountClient,0,114,0,0,0,28,0,6,0,6
+transaction-ms,com.transactionms,TransactionMsApplication,0,8,0,0,0,3,0,2,0,2
