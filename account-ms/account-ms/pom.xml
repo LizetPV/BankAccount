@@ -148,6 +148,17 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.11</version>
+        <configuration>
+          <excludes>
+            <!-- Excluir DTOs -->
+            <exclude>com/bank/accountms/api/dto/**</exclude>
+            <!-- Excluir mappers -->
+            <exclude>com/bank/accountms/api/mapper/**</exclude>
+            <!-- Excluir entidades de dominio -->
+            <exclude>com/bank/accountms/domain/**</exclude>
+            <exclude>com/bank/accountms/contract/**</exclude>
+          </excludes>
+        </configuration>
 				<executions>
 					<execution>
 						<goals>
@@ -163,11 +174,6 @@
 						</goals>
 					</execution>
 				</executions>
-				<configuration>
-					<excludes>
-						<exclude>com/bank/accountms/contract/**</exclude>
-					</excludes>
-				</configuration>
 			</plugin>
             <!-- Checkstyle -->
             <plugin>

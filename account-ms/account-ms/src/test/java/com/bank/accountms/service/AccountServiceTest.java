@@ -94,7 +94,32 @@ class AccountServiceTest {
         assertEquals(150.0, result.getBalance());
     }
 
-    @Test
+  @Test
+  void testList_WithPageable_WhenCustomerIdIsNull() {
+    var pageable = mock(org.springframework.data.domain.Pageable.class);
+    Account acc1 = new Account();
+    Account acc2 = new Account();
+
+    when(accountRepository.findAll(pageable))
+        .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(acc1, acc2)));
+
+    var result = accountService.list(null, pageable);
+
+    assertEquals(2, result.getContent().size());
+    verify(accountRepository).findAll(pageable);
+    verify(accountRepository, never()).findByCustomerId(anyLong(), any());
+  }
+
+  @Test
+  void testWithdraw_ThrowsWhenAmountNonPositive() {
+    var dto = mock(com.bank.accountms.api.dto.AccountDtos.AmountDto.class);
+    when(dto.amount()).thenReturn(0.0);
+
+    assertThrows(IllegalArgumentException.class, () -> accountService.withdraw(1L, dto));
+  }
+
+
+  @Test
     void testDelete_CallsRepository() {
         doNothing().when(accountRepository).deleteById(1L);
         accountService.delete(1L);
