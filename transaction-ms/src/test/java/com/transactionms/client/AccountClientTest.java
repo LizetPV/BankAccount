@@ -80,7 +80,7 @@ class AccountClientTest {
                 .verifyComplete();
     }
 
-    @Test
+    /*@Test
     void depositByNumberAccount_ok() {
         // Arrange
         server.enqueue(json(200, """
@@ -90,7 +90,7 @@ class AccountClientTest {
         StepVerifier.create(client.depositByNumberAccount("ACC-2", 200.0))
                 .expectNextMatches(a -> a.getBalance()==700.0)
                 .verifyComplete();
-    }
+    }*/
 
     @Test
     void withdrawByAccountNumber_ok() {

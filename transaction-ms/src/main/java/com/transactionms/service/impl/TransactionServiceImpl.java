@@ -1,50 +1,52 @@
 package com.transactionms.service.impl;
 
-import com.transactionms.client.AccountClient;
+import com.transactionms.service.AccountService;
 import com.transactionms.exceptions.AccountNotFoundException;
 import com.transactionms.exceptions.InsufficientFundsException;
-import com.transactionms.exceptions.InvalidTransactionException;
+import com.transactionms.factory.TransactionFactory;
 import com.transactionms.repository.TransactionRepository;
 import com.transactionms.repository.model.Transaction;
-import com.transactionms.repository.model.TransactionType;
 import com.transactionms.service.TransactionService;
+import com.transactionms.validator.TransactionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 
+/**
+ * Implementación del servicio de transacciones.
+ * Refactorizado para cumplir mejor con los principios SOLID:
+ * - SRP: Delegación de responsabilidades a TransactionValidator y TransactionFactory
+ * - DIP: Depende de AccountService (abstracción) en lugar de AccountClient (implementación)
+ */
 @Service
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository repository;
-    private final AccountClient accountClient; // 👈 inyectamos el cliente
+    private final AccountService accountService; // ✅ DIP: Depende de abstracción
+    private final TransactionValidator validator; // ✅ SRP: Validaciones delegadas
+    private final TransactionFactory transactionFactory; // ✅ SRP: Construcción delegada
 
     @Override
     public Mono<Transaction> deposit(String accountNumber, Double amount) {
-        if (amount <= 0) {
-            return Mono.error(new InvalidTransactionException("El monto debe ser mayor a 0"));
-        }
+        // ✅ SRP: Validación delegada a TransactionValidator
+        validator.validateDeposit(accountNumber, amount);
 
         // 1️⃣ validar que la cuenta exista en account-ms
-        return accountClient.getByAccountNumber(accountNumber)
+        return accountService.getByAccountNumber(accountNumber)
                 .switchIfEmpty(Mono.error(
                     new AccountNotFoundException("Cuenta destino no encontrada")))
                 // 2️⃣ si existe, invocar depósito en account-ms
                 .flatMap(account ->
-                        accountClient.depositByNumberAccount(accountNumber, amount)
-                                // 3️⃣ guardar la transacción en Mongo
+                        accountService.depositByAccountNumber(accountNumber, amount)
+                                // 3️⃣ guardar la transacción usando el factory
                                 .flatMap(updated -> {
-                                    Transaction tx = Transaction.builder()
-                                            .type(TransactionType.DEPOSIT)
-                                            .accountTo(accountNumber)
-                                            .amount(amount)
-                                            .date(Instant.now())
-                                            .build();
+                                    // ✅ SRP: Construcción delegada a TransactionFactory
+                                    Transaction tx = transactionFactory.createDeposit(accountNumber, amount);
                                     return repository.save(tx);
                                 })
                 );
@@ -52,25 +54,20 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Mono<Transaction> withdraw(String accountNumber, Double amount) {
-        if (amount <= 0) {
-            return Mono.error(new InvalidTransactionException("El monto debe ser mayor a 0"));
-        }
+        // ✅ SRP: Validación delegada a TransactionValidator
+        validator.validateWithdraw(accountNumber, amount);
 
-        return accountClient.getByAccountNumber(accountNumber)
+        return accountService.getByAccountNumber(accountNumber)
                 .switchIfEmpty(Mono.error(new AccountNotFoundException("Cuenta no encontrada")))
                 .flatMap(account -> {
                     if (account.getBalance() < amount) {
                         return Mono.error(new InsufficientFundsException(
                             "Fondos insuficientes en la cuenta " + accountNumber));
                     }
-                    return accountClient.withdrawByAccountNumber(accountNumber, amount)
+                    return accountService.withdrawByAccountNumber(accountNumber, amount)
                             .flatMap(updated -> {
-                                Transaction tx = Transaction.builder()
-                                        .type(TransactionType.WITHDRAW)
-                                        .accountFrom(accountNumber)
-                                        .amount(amount)
-                                        .date(Instant.now())
-                                        .build();
+                                // ✅ SRP: Construcción delegada a TransactionFactory
+                                Transaction tx = transactionFactory.createWithdraw(accountNumber, amount);
                                 return repository.save(tx);
                             });
                 });
@@ -79,15 +76,10 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public Mono<Transaction> transfer(String originAccountNumber,
         String destinationAccountNumber, Double amount) {
-        if (amount <= 0) {
-            return Mono.error(new InvalidTransactionException("El monto debe ser mayor a 0"));
-        }
-        if (originAccountNumber.equals(destinationAccountNumber)) {
-            return Mono.error(new InvalidTransactionException(
-                "La cuenta origen y destino no pueden ser iguales"));
-        }
+        // ✅ SRP: Validación delegada a TransactionValidator
+        validator.validateTransfer(originAccountNumber, destinationAccountNumber, amount);
 
-        return accountClient.getByAccountNumber(originAccountNumber)
+        return accountService.getByAccountNumber(originAccountNumber)
                 .switchIfEmpty(Mono.error(new AccountNotFoundException(
                     "Cuenta origen no encontrada")))
                 .flatMap(origin -> {
@@ -95,23 +87,19 @@ public class TransactionServiceImpl implements TransactionService {
                         return Mono.error(new InsufficientFundsException(
                             "Fondos insuficientes en la cuenta" + originAccountNumber));
                     }
-                    return accountClient.getByAccountNumber(destinationAccountNumber)
+                    return accountService.getByAccountNumber(destinationAccountNumber)
                             .switchIfEmpty(Mono.error(new AccountNotFoundException(
                                 "Cuenta destino no encontrada")))
                             // 1️⃣ retirar de origen
                             .flatMap(dest ->
-                                    accountClient.withdraw(origin.getId(), amount)
+                                    accountService.withdraw(origin.getId(), amount)
                                             // 2️⃣ depositar en destino
-                                            .then(accountClient.deposit(dest.getId(), amount))
-                                            // 3️⃣ guardar la transacción
+                                            .then(accountService.deposit(dest.getId(), amount))
+                                            // 3️⃣ guardar la transacción usando el factory
                                             .flatMap(updated -> {
-                                                Transaction tx = Transaction.builder()
-                                                        .type(TransactionType.TRANSFER)
-                                                        .accountFrom(originAccountNumber)
-                                                        .accountTo(destinationAccountNumber)
-                                                        .amount(amount)
-                                                        .date(Instant.now())
-                                                        .build();
+                                                // ✅ SRP: Construcción delegada a TransactionFactory
+                                                Transaction tx = transactionFactory.createTransfer(
+                                                    originAccountNumber, destinationAccountNumber, amount);
                                                 return repository.save(tx);
                                             })
                             );

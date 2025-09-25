@@ -2,17 +2,23 @@ package com.transactionms.client;
 
 import com.transactionms.client.dto.AccountDto;
 import com.transactionms.client.dto.AmountDto;
+import com.transactionms.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+/**
+ * Implementación concreta del servicio de cuentas usando WebClient.
+ * Cumple con Dependency Inversion Principle (DIP) - implementa abstracción AccountService.
+ */
 @Component
 @RequiredArgsConstructor
-public class AccountClient {
+public class AccountClient implements AccountService {
 
     private final WebClient webClient;
 
+    @Override
     public Mono<AccountDto> getAccount(Long id) {
         return webClient.get()
                 .uri("/{id}", id)
@@ -20,6 +26,7 @@ public class AccountClient {
                 .bodyToMono(AccountDto.class);
     }
 
+    @Override
     public Mono<AccountDto> deposit(Long id, Double amount) {
         return webClient.put()
                 .uri("/{id}/depositar", id)
@@ -28,6 +35,7 @@ public class AccountClient {
                 .bodyToMono(AccountDto.class);
     }
 
+    @Override
     public Mono<AccountDto> withdraw(Long id, Double amount) {
         return webClient.put()
                 .uri("/{id}/retirar", id)
@@ -36,6 +44,7 @@ public class AccountClient {
                 .bodyToMono(AccountDto.class);
     }
 
+    @Override
     public Mono<AccountDto> getByAccountNumber(String accountNumber) {
         return webClient.get()
                 .uri("/ByNumber/{accountNumber}", accountNumber)
@@ -43,7 +52,8 @@ public class AccountClient {
                 .bodyToMono(AccountDto.class);
     }
 
-    public Mono<AccountDto> depositByNumberAccount(String accountNumber, Double amount) {
+    @Override
+    public Mono<AccountDto> depositByAccountNumber(String accountNumber, Double amount) {
         return webClient.put()
                 .uri("/ByNumber/{accountNumber}/depositar", accountNumber)
                 .bodyValue(new AmountDto(amount))
@@ -51,6 +61,7 @@ public class AccountClient {
                 .bodyToMono(AccountDto.class);
     }
 
+    @Override
     public Mono<AccountDto> withdrawByAccountNumber(String accountNumber, Double amount) {
         return webClient.put()
                 .uri("/ByNumber/{accountNumber}/retirar", accountNumber)
