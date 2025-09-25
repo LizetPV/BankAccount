@@ -181,13 +181,33 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.11</version>
-                <executions>
+              <configuration>
+                <excludes>
+                  <exclude>**/contract/**</exclude>
+                  <exclude>**/repository/**</exclude>
+                  <!-- Excluir DTOs -->
+                  <exclude>com/bank/customerms/api/dto/**</exclude>
+                  <!-- Excluir mappers -->
+                  <exclude>com/bank/customerms/api/mapper/**</exclude>
+
+                  <!-- Opcionales, si los necesitas -->
+                  <!-- Excluir DTOs generados -->
+                  <exclude>com/bank/customerms/contract/model/**</exclude>
+                  <!-- Excluir stubs de OpenAPI -->
+                  <exclude>**/generated/**</exclude>
+                  <!-- Excluir clase principal (opcional) -->
+                  <!-- <exclude>com/bank/customerms/CustomerMicroserviceApplication.class</exclude> -->
+                </excludes>
+              </configuration>
+
+              <executions>
                     <execution>
                         <goals><goal>prepare-agent</goal></goals>
                     </execution>
                     <execution>
                         <id>report</id>
-                        <phase>test</phase>
+                        <phase>verify</phase>
+<!--                        <phase>test</phase>-->
                         <goals><goal>report</goal></goals>
                     </execution>
                 </executions>

@@ -1,4 +1,4 @@
-package com.transactionms.api;
+package com.transactionms.controller;
 
 import com.transactionms.dto.DepositRequestDto;
 import com.transactionms.dto.TransactionDto;
@@ -42,7 +42,8 @@ public class TransactionController {
     @Operation(summary = "Registrar una transferencia")
     @PostMapping("/transferencia")
     public Mono<TransactionDto> transfer(@RequestBody TransferRequestDto request) {
-        return service.transfer(request.getOriginAccountNumber(), request.getDestinationAccountNumber(), request.getAmount())
+        return service.transfer(request.getOriginAccountNumber(),
+                request.getDestinationAccountNumber(), request.getAmount())
                 .map(TransactionDto::fromEntity);
     }
 
@@ -51,8 +52,10 @@ public class TransactionController {
     public Flux<TransactionDto> history(
             @RequestParam(required = false) String numeroCuenta,
             @RequestParam(required = false) String tipo,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaDesde,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaHasta) {
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaDesde,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaHasta) {
         return service.history(numeroCuenta, tipo, fechaDesde, fechaHasta)
                 .map(TransactionDto::fromEntity);
     }

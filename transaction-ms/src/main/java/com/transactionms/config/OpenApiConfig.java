@@ -15,7 +15,8 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Transaction API")
                         .version("1.0.0")
-                        .description("API para registrar depósitos, retiros y transferencias (Proyecto III)"));
+                        .description("API para registrar depósitos,"
+                            + " retiros y transferencias (Proyecto III)"));
     }
 
     @Bean

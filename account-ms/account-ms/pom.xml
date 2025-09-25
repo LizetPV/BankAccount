@@ -148,6 +148,17 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.11</version>
+        <configuration>
+          <excludes>
+            <!-- Excluir DTOs -->
+            <exclude>com/bank/accountms/api/dto/**</exclude>
+            <!-- Excluir mappers -->
+            <exclude>com/bank/accountms/api/mapper/**</exclude>
+            <!-- Excluir entidades de dominio -->
+            <exclude>com/bank/accountms/domain/**</exclude>
+            <exclude>com/bank/accountms/contract/**</exclude>
+          </excludes>
+        </configuration>
 				<executions>
 					<execution>
 						<goals>
@@ -156,17 +167,13 @@
 					</execution>
 					<execution>
 						<id>report</id>
-						<phase>test</phase>
+<!--						<phase>test</phase>-->
+            <phase>verify</phase>
 						<goals>
 							<goal>report</goal>
 						</goals>
 					</execution>
 				</executions>
-				<configuration>
-					<excludes>
-						<exclude>com/bank/accountms/contract/**</exclude>
-					</excludes>
-				</configuration>
 			</plugin>
             <!-- Checkstyle -->
             <plugin>
@@ -187,6 +194,24 @@
                     <consoleOutput>true</consoleOutput>
                     <failOnViolation>true</failOnViolation>
                 </configuration>
+            </plugin>
+            <!-- plugin Añade las carpetas generadas al classpath del IDE -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>add-generated-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals><goal>add-source</goal></goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/openapi/src/main/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 		</plugins>
 	</build>

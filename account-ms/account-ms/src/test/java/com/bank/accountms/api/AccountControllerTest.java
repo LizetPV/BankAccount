@@ -186,4 +186,85 @@ class AccountControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(150.0, response.getBody().getBalance());
     }
+  // ---- Tests adicionales para parseSort y listAccounts ----
+
+  @Test
+  void testListAccounts_sortNull_defaultsToIdDesc() {
+    Page<Account> page = new PageImpl<>(List.of());
+    when(accountService.list(anyLong(), any(Pageable.class))).thenReturn(page);
+
+    ResponseEntity<AccountPage> response = accountController.listAccounts(1L, 0, 10, null);
+
+    assertTrue(response.getBody().getSort().contains("id: DESC"));
+  }
+
+  @Test
+  void testListAccounts_sortBlank_defaultsToIdDesc() {
+    Page<Account> page = new PageImpl<>(List.of());
+    when(accountService.list(anyLong(), any(Pageable.class))).thenReturn(page);
+
+    ResponseEntity<AccountPage> response = accountController.listAccounts(1L, 0, 10, "   ");
+
+    assertTrue(response.getBody().getSort().contains("id: DESC"));
+  }
+
+  @Test
+  void testListAccounts_sortAsc() {
+    Page<Account> page = new PageImpl<>(List.of());
+    when(accountService.list(anyLong(), any(Pageable.class))).thenReturn(page);
+
+    ResponseEntity<AccountPage> response = accountController.listAccounts(1L, 0, 10, "accountNumber,asc");
+
+    assertTrue(response.getBody().getSort().contains("accountNumber: ASC"));
+  }
+
+  @Test
+  void testListAccounts_sortDesc() {
+    Page<Account> page = new PageImpl<>(List.of());
+    when(accountService.list(anyLong(), any(Pageable.class))).thenReturn(page);
+
+    ResponseEntity<AccountPage> response = accountController.listAccounts(1L, 0, 10, "balance,desc");
+
+    assertTrue(response.getBody().getSort().contains("balance: DESC"));
+  }
+
+  @Test
+  void testListAccounts_sortInvalid_fallbackToDefault() {
+    Page<Account> page = new PageImpl<>(List.of());
+    when(accountService.list(anyLong(), any(Pageable.class))).thenReturn(page);
+
+    // ",," forzará un split raro -> cae en catch -> default sort
+    ResponseEntity<AccountPage> response = accountController.listAccounts(1L, 0, 10, ",,");
+
+    assertTrue(response.getBody().getSort().contains("id: DESC"));
+  }
+
+  @Test
+  void testListAccounts_pageNull_defaultsToZero() {
+    Page<Account> page = new PageImpl<>(List.of());
+    when(accountService.list(any(), any(Pageable.class))).thenReturn(page);
+
+    ResponseEntity<AccountPage> response = accountController.listAccounts(1L, null, 10, "id,desc");
+    assertEquals(0, response.getBody().getNumber());
+  }
+
+  @Test
+  void testListAccounts_pageNegative_defaultsToZero() {
+    Page<Account> page = new PageImpl<>(List.of());
+    when(accountService.list(any(), any(Pageable.class))).thenReturn(page);
+
+    ResponseEntity<AccountPage> response = accountController.listAccounts(1L, -5, 10, "id,desc");
+    assertEquals(0, response.getBody().getNumber());
+  }
+
+
+  @Test
+  void testParseSort_withoutDirection_defaultsToAsc() {
+    Page<Account> page = new PageImpl<>(List.of());
+    when(accountService.list(any(), any(Pageable.class))).thenReturn(page);
+
+    ResponseEntity<AccountPage> response = accountController.listAccounts(1L, 0, 10, "accountNumber");
+    assertTrue(response.getBody().getSort().contains("accountNumber: ASC"));
+  }
+
 }

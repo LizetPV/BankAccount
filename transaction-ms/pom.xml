@@ -79,6 +79,13 @@
             <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
             <version>2.5.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>mockwebserver</artifactId>
+            <version>4.12.0</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 	<build>
@@ -122,7 +129,7 @@
                             <generatorName>spring</generatorName>
                             <library>spring-boot</library>
                             <output>${project.build.directory}/generated-sources/openapi</output>
-                            <apiPackage>com.transactionms.api</apiPackage>
+                            <apiPackage>com.transactionms.controller</apiPackage>
                             <modelPackage>com.transactionms.model</modelPackage>
                             <configOptions>
                                 <interfaceOnly>true</interfaceOnly>
@@ -133,7 +140,92 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+
+                <!-- EXCLUSIONES GLOBALES (aplican a report y check) -->
+                <configuration>
+                    <excludes>
+                        <!-- todo lo generado por OpenAPI -->
+                        <exclude>com/transactionms/model/**</exclude>
+                        <exclude>com/transactionms/controller/TransaccionesApi*.class</exclude>
+                        <exclude>com/transactionms/controller/ApiUtil*.class</exclude>
+                        <!-- por si cambia el nombre generado -->
+                        <exclude>com/transactionms/controller/*Api*.class</exclude>
+                        <exclude>com/transactionms/controller/*Api*$*.class</exclude>
+                    </excludes>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.80</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.70</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Checkstyle -->
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-checkstyle-plugin</artifactId>
+              <version>3.3.1</version>
+              <executions>
+                <execution>
+                  <id>checkstyle</id>
+                  <phase>verify</phase>
+                  <goals>
+                    <goal>check</goal>
+                  </goals>
+                </execution>
+              </executions>
+              <configuration>
+                <configLocation>google_checks.xml</configLocation>
+                <consoleOutput>true</consoleOutput>
+                <failOnViolation>true</failOnViolation>
+              </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                </configuration>
+            </plugin>
         </plugins>
+
 	</build>
 
 </project>
