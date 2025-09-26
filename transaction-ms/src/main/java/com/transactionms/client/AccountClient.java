@@ -11,8 +11,10 @@ import reactor.core.publisher.Mono;
 /**
  * Implementación concreta del servicio de cuentas usando WebClient.
  * Cumple con Dependency Inversion Principle (DIP) - implementa abstracción AccountService.
+ * 
+ * @deprecated Use AccountServiceImpl with OpenAPI client instead
  */
-@Component
+@Component("webClientAccountService")
 @RequiredArgsConstructor
 public class AccountClient implements AccountService {
 
