@@ -80,17 +80,6 @@ class AccountClientTest {
                 .verifyComplete();
     }
 
-    /*@Test
-    void depositByNumberAccount_ok() {
-        // Arrange
-        server.enqueue(json(200, """
-          {"id":2,"accountNumber":"ACC-2","balance":700.0,"accountType":"CHECKING","customerId":11}
-        """));
-        // Act & Assert
-        StepVerifier.create(client.depositByNumberAccount("ACC-2", 200.0))
-                .expectNextMatches(a -> a.getBalance()==700.0)
-                .verifyComplete();
-    }*/
 
     @Test
     void withdrawByAccountNumber_ok() {
