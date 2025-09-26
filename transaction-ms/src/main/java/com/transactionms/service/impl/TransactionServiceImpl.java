@@ -3,12 +3,12 @@ package com.transactionms.service.impl;
 import com.transactionms.service.AccountService;
 import com.transactionms.exceptions.AccountNotFoundException;
 import com.transactionms.exceptions.InsufficientFundsException;
-import com.transactionms.exceptions.InvalidTransactionException;
 import com.transactionms.factory.TransactionFactory;
 import com.transactionms.repository.TransactionRepository;
 import com.transactionms.repository.model.Transaction;
 import com.transactionms.service.TransactionService;
 import com.transactionms.validator.TransactionValidator;
+import com.transactionms.exceptions.InvalidTransactionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -34,94 +34,85 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Mono<Transaction> deposit(String accountNumber, Double amount) {
-        // 1️⃣ validar que la cuenta exista en account-ms
-        return Mono.defer(() ->{
+        return Mono.defer(() -> {
             try {
-                // ✅ SRP: Validación delegada a TransactionValidator
                 validator.validateDeposit(accountNumber, amount);
             } catch (InvalidTransactionException e) {
-                return Mono.error(e);
+                return Mono.error(e); // Propaga la excepción reactivamente
             }
 
+            // Continúa la lógica original si la validación es exitosa
             return accountService.getByAccountNumber(accountNumber)
-            .switchIfEmpty(Mono.error(
-                new AccountNotFoundException("Cuenta destino no encontrada")))
-            // 2️⃣ si existe, invocar depósito en account-ms
-            .flatMap(account ->
-                    accountService.depositByAccountNumber(accountNumber, amount)
-                            // 3️⃣ guardar la transacción usando el factory
-                            .flatMap(updated -> {
-                                // ✅ SRP: Construcción delegada a TransactionFactory
-                                Transaction tx = transactionFactory.createDeposit(accountNumber, amount);
-                                return repository.save(tx);
-                            })
-            );
+                    .switchIfEmpty(Mono.error(
+                            new AccountNotFoundException("Cuenta destino no encontrada")))
+                    .flatMap(account ->
+                            accountService.depositByAccountNumber(accountNumber, amount)
+                                    .flatMap(updated -> {
+                                        Transaction tx = transactionFactory.createDeposit(accountNumber, amount);
+                                        return repository.save(tx);
+                                    })
+                    );
         });
     }
 
     @Override
     public Mono<Transaction> withdraw(String accountNumber, Double amount) {
-        return Mono.defer(() ->{
+        return Mono.defer(() -> {
             try {
-                // ✅ SRP: Validación delegada a TransactionValidator
                 validator.validateWithdraw(accountNumber, amount);
             } catch (InvalidTransactionException e) {
                 return Mono.error(e);
             }
 
+            // Continúa la lógica original si la validación es exitosa
             return accountService.getByAccountNumber(accountNumber)
                     .switchIfEmpty(Mono.error(new AccountNotFoundException("Cuenta no encontrada")))
                     .flatMap(account -> {
                         if (account.getBalance() < amount) {
                             return Mono.error(new InsufficientFundsException(
-                                "Fondos insuficientes en la cuenta " + accountNumber));
+                                    "Fondos insuficientes en la cuenta " + accountNumber));
                         }
                         return accountService.withdrawByAccountNumber(accountNumber, amount)
                                 .flatMap(updated -> {
-                                    // ✅ SRP: Construcción delegada a TransactionFactory
                                     Transaction tx = transactionFactory.createWithdraw(accountNumber, amount);
                                     return repository.save(tx);
                                 });
                     });
-            });
+        });
     }
 
     @Override
     public Mono<Transaction> transfer(String originAccountNumber,
-        String destinationAccountNumber, Double amount) {
-        return Mono.defer(() ->{
+                                      String destinationAccountNumber, Double amount) {
+        return Mono.defer(() -> {
             try {
-                // ✅ SRP: Validación delegada a TransactionValidator
                 validator.validateTransfer(originAccountNumber, destinationAccountNumber, amount);
             } catch (InvalidTransactionException e) {
                 return Mono.error(e);
             }
 
+            // Continúa la lógica original si la validación es exitosa
             return accountService.getByAccountNumber(originAccountNumber)
-                .switchIfEmpty(Mono.error(new AccountNotFoundException(
-                    "Cuenta origen no encontrada")))
-                .flatMap(origin -> {
-                    if (origin.getBalance() < amount) {
-                        return Mono.error(new InsufficientFundsException(
-                            "Fondos insuficientes en la cuenta" + originAccountNumber));
-                    }
-                    return accountService.getByAccountNumber(destinationAccountNumber)
-                            .switchIfEmpty(Mono.error(new AccountNotFoundException(
-                                "Cuenta destino no encontrada")))
-                            // 1️⃣ retirar de origen
-                            .flatMap(dest ->
-                                    accountService.withdraw(origin.getId(), amount)
-                                            // 2️⃣ depositar en destino
-                                            .then(accountService.deposit(dest.getId(), amount))
-                                            // 3️⃣ guardar la transacción usando el factory
-                                            .flatMap(updated -> {
-                                                // ✅ SRP: Construcción delegada a TransactionFactory
-                                                Transaction tx = transactionFactory.createTransfer(
-                                                    originAccountNumber, destinationAccountNumber, amount);
-                                                return repository.save(tx);
-                                            })
-                            );
-                });
+                    .switchIfEmpty(Mono.error(new AccountNotFoundException(
+                            "Cuenta origen no encontrada")))
+                    .flatMap(origin -> {
+                        if (origin.getBalance() < amount) {
+                            return Mono.error(new InsufficientFundsException(
+                                    "Fondos insuficientes en la cuenta" + originAccountNumber));
+                        }
+                        return accountService.getByAccountNumber(destinationAccountNumber)
+                                .switchIfEmpty(Mono.error(new AccountNotFoundException(
+                                        "Cuenta destino no encontrada")))
+                                .flatMap(dest ->
+                                        accountService.withdraw(origin.getId(), amount)
+                                                .then(accountService.deposit(dest.getId(), amount))
+                                                .flatMap(updated -> {
+                                                    Transaction tx = transactionFactory.createTransfer(
+                                                            originAccountNumber, destinationAccountNumber, amount);
+                                                    return repository.save(tx);
+                                                })
+                                );
+                    });
         });
     }
 
