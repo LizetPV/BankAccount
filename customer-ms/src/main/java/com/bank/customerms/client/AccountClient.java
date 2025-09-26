@@ -22,13 +22,13 @@ public class AccountClient {
     var response = restClient.get()
         .uri(accountsBaseUrl + "/api/v1/cuentas?customerId={id}", customerId)
         .retrieve()
-        // 👇 en vez de un array, deserializamos el objeto que tiene "content"
+        // en vez de un array, deserializamos el objeto que tiene "content"
         .body(AccountPageDto.class);
 
     return response != null && response.getContent() != null && !response.getContent().isEmpty();
   }
 
-  // ✅ Esta clase la dejas como está
+  // Esta clase la dejas como está
   @Getter
   public static class AccountDto {
 
