@@ -3,6 +3,7 @@ package com.transactionms.service.impl;
 import com.transactionms.service.AccountService;
 import com.transactionms.exceptions.AccountNotFoundException;
 import com.transactionms.exceptions.InsufficientFundsException;
+import com.transactionms.exceptions.InvalidTransactionException;
 import com.transactionms.factory.TransactionFactory;
 import com.transactionms.repository.TransactionRepository;
 import com.transactionms.repository.model.Transaction;
@@ -33,53 +34,70 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Mono<Transaction> deposit(String accountNumber, Double amount) {
-        // ✅ SRP: Validación delegada a TransactionValidator
-        validator.validateDeposit(accountNumber, amount);
-
         // 1️⃣ validar que la cuenta exista en account-ms
-        return accountService.getByAccountNumber(accountNumber)
-                .switchIfEmpty(Mono.error(
-                    new AccountNotFoundException("Cuenta destino no encontrada")))
-                // 2️⃣ si existe, invocar depósito en account-ms
-                .flatMap(account ->
-                        accountService.depositByAccountNumber(accountNumber, amount)
-                                // 3️⃣ guardar la transacción usando el factory
-                                .flatMap(updated -> {
-                                    // ✅ SRP: Construcción delegada a TransactionFactory
-                                    Transaction tx = transactionFactory.createDeposit(accountNumber, amount);
-                                    return repository.save(tx);
-                                })
-                );
+        return Mono.defer(() ->{
+            try {
+                // ✅ SRP: Validación delegada a TransactionValidator
+                validator.validateDeposit(accountNumber, amount);
+            } catch (InvalidTransactionException e) {
+                return Mono.error(e);
+            }
+
+            return accountService.getByAccountNumber(accountNumber)
+            .switchIfEmpty(Mono.error(
+                new AccountNotFoundException("Cuenta destino no encontrada")))
+            // 2️⃣ si existe, invocar depósito en account-ms
+            .flatMap(account ->
+                    accountService.depositByAccountNumber(accountNumber, amount)
+                            // 3️⃣ guardar la transacción usando el factory
+                            .flatMap(updated -> {
+                                // ✅ SRP: Construcción delegada a TransactionFactory
+                                Transaction tx = transactionFactory.createDeposit(accountNumber, amount);
+                                return repository.save(tx);
+                            })
+            );
+        });
     }
 
     @Override
     public Mono<Transaction> withdraw(String accountNumber, Double amount) {
-        // ✅ SRP: Validación delegada a TransactionValidator
-        validator.validateWithdraw(accountNumber, amount);
+        return Mono.defer(() ->{
+            try {
+                // ✅ SRP: Validación delegada a TransactionValidator
+                validator.validateWithdraw(accountNumber, amount);
+            } catch (InvalidTransactionException e) {
+                return Mono.error(e);
+            }
 
-        return accountService.getByAccountNumber(accountNumber)
-                .switchIfEmpty(Mono.error(new AccountNotFoundException("Cuenta no encontrada")))
-                .flatMap(account -> {
-                    if (account.getBalance() < amount) {
-                        return Mono.error(new InsufficientFundsException(
-                            "Fondos insuficientes en la cuenta " + accountNumber));
-                    }
-                    return accountService.withdrawByAccountNumber(accountNumber, amount)
-                            .flatMap(updated -> {
-                                // ✅ SRP: Construcción delegada a TransactionFactory
-                                Transaction tx = transactionFactory.createWithdraw(accountNumber, amount);
-                                return repository.save(tx);
-                            });
-                });
+            return accountService.getByAccountNumber(accountNumber)
+                    .switchIfEmpty(Mono.error(new AccountNotFoundException("Cuenta no encontrada")))
+                    .flatMap(account -> {
+                        if (account.getBalance() < amount) {
+                            return Mono.error(new InsufficientFundsException(
+                                "Fondos insuficientes en la cuenta " + accountNumber));
+                        }
+                        return accountService.withdrawByAccountNumber(accountNumber, amount)
+                                .flatMap(updated -> {
+                                    // ✅ SRP: Construcción delegada a TransactionFactory
+                                    Transaction tx = transactionFactory.createWithdraw(accountNumber, amount);
+                                    return repository.save(tx);
+                                });
+                    });
+            });
     }
 
     @Override
     public Mono<Transaction> transfer(String originAccountNumber,
         String destinationAccountNumber, Double amount) {
-        // ✅ SRP: Validación delegada a TransactionValidator
-        validator.validateTransfer(originAccountNumber, destinationAccountNumber, amount);
+        return Mono.defer(() ->{
+            try {
+                // ✅ SRP: Validación delegada a TransactionValidator
+                validator.validateTransfer(originAccountNumber, destinationAccountNumber, amount);
+            } catch (InvalidTransactionException e) {
+                return Mono.error(e);
+            }
 
-        return accountService.getByAccountNumber(originAccountNumber)
+            return accountService.getByAccountNumber(originAccountNumber)
                 .switchIfEmpty(Mono.error(new AccountNotFoundException(
                     "Cuenta origen no encontrada")))
                 .flatMap(origin -> {
@@ -104,6 +122,7 @@ public class TransactionServiceImpl implements TransactionService {
                                             })
                             );
                 });
+        });
     }
 
     @Override

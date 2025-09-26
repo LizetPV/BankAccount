@@ -138,6 +138,28 @@
                             </configOptions>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>client-notification</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/openapi/openapi_account.yaml</inputSpec>
+                            <generatorName>java</generatorName>
+                            <apiPackage>com.transactionms.client.account.api</apiPackage>
+                            <modelPackage>com.transactionms.client.account.dto</modelPackage>
+                            <configOptions>
+                                <library>native</library>
+                                <sourceFolder>src/main/java</sourceFolder>
+                                <basePackage>${default.package}</basePackage>
+                                <configPackage>${default.package}.config</configPackage>
+                                <isThirdPartyService>false</isThirdPartyService>
+                                <dateLibrary>java8</dateLibrary>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>

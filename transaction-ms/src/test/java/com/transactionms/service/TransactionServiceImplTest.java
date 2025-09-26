@@ -1,13 +1,14 @@
 package com.transactionms.service;
 
-import com.transactionms.client.AccountClient;
 import com.transactionms.client.dto.AccountDto;
 import com.transactionms.exceptions.InsufficientFundsException;
 import com.transactionms.exceptions.InvalidTransactionException;
+import com.transactionms.factory.TransactionFactory;
 import com.transactionms.repository.TransactionRepository;
 import com.transactionms.repository.model.Transaction;
 import com.transactionms.repository.model.TransactionType;
 import com.transactionms.service.impl.TransactionServiceImpl;
+import com.transactionms.validator.TransactionValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +32,7 @@ import static org.mockito.Mockito.*;
  */
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceImplTest {
-/*
+
     // ====== Constantes de prueba (DRY) ======
     private static final String ACC_1 = "ACC-001";
     private static final String ACC_2 = "ACC-002";
@@ -44,12 +45,14 @@ class TransactionServiceImplTest {
     private static final Double BAL_1000   = 1000.0;
 
     @Mock private TransactionRepository repository;
-    @Mock private AccountClient accountClient;
+    @Mock private AccountService accountService;
+    @Mock private TransactionValidator validator;
+    @Mock private TransactionFactory transactionFactory;
     @InjectMocks private TransactionServiceImpl service;
 
     @BeforeEach
     void resetMocks() {
-        reset(repository, accountClient);
+        reset(repository, accountService, validator, transactionFactory);
     }
 
     // ====== Helpers ======
@@ -68,9 +71,18 @@ class TransactionServiceImplTest {
     @Test
     void givenValidAmount_whenDeposit_thenSavesDepositTransaction() {
         // Arrange
-        when(accountClient.getByAccountNumber(ACC_1))
+        Transaction mockTransaction = Transaction.builder()
+                .type(TransactionType.DEPOSIT)
+                .accountTo(ACC_1)
+                .amount(AMOUNT_150)
+                .date(java.time.Instant.now())
+                .build();
+        
+        when(transactionFactory.createDeposit(ACC_1, AMOUNT_150))
+                .thenReturn(mockTransaction);
+        when(accountService.getByAccountNumber(ACC_1))
                 .thenReturn(Mono.just(accDto(1L, ACC_1, BAL_1000)));
-        when(accountClient.depositByNumberAccount(ACC_1, AMOUNT_150))
+        when(accountService.depositByAccountNumber(ACC_1, AMOUNT_150))
                 .thenReturn(Mono.just(accDto(1L, ACC_1, BAL_1000 + AMOUNT_150)));
         when(repository.save(any(Transaction.class)))
                 .thenAnswer(inv -> {
@@ -94,14 +106,21 @@ class TransactionServiceImplTest {
                 .verifyComplete();
 
         ArgumentCaptor<Transaction> captor = ArgumentCaptor.forClass(Transaction.class);
+        verify(validator).validateDeposit(ACC_1, AMOUNT_150);
+        verify(transactionFactory).createDeposit(ACC_1, AMOUNT_150);
         verify(repository).save(captor.capture());
         org.junit.jupiter.api.Assertions.assertEquals(TransactionType.DEPOSIT, captor.getValue().getType());
-        verify(accountClient).getByAccountNumber(ACC_1);
-        verify(accountClient).depositByNumberAccount(ACC_1, AMOUNT_150);
+        verify(accountService).getByAccountNumber(ACC_1);
+        verify(accountService).depositByAccountNumber(ACC_1, AMOUNT_150);
     }
 
     @Test
     void givenInvalidAmount_whenDeposit_thenInvalidTransaction() {
+        doThrow(new InvalidTransactionException("El monto debe ser mayor a 0"))
+                .when(validator).validateDeposit(ACC_1, 0.0);
+        doThrow(new InvalidTransactionException("El monto debe ser mayor a 0"))
+                .when(validator).validateDeposit(ACC_1, -10.0);
+        
         // Act & Assert
         StepVerifier.create(service.deposit(ACC_1, 0.0))
                 .expectError(InvalidTransactionException.class)
@@ -109,9 +128,6 @@ class TransactionServiceImplTest {
         StepVerifier.create(service.deposit(ACC_1, -10.0))
                 .expectError(InvalidTransactionException.class)
                 .verify();
-
-        verifyNoInteractions(accountClient);
-        verify(repository, never()).save(any());
     }
 
     // ====== RETIRO ======
@@ -119,9 +135,18 @@ class TransactionServiceImplTest {
     @Test
     void givenBalanceEnough_whenWithdraw_thenSavesWithdrawTransaction() {
         // Arrange
-        when(accountClient.getByAccountNumber(ACC_2))
+        Transaction mockTransaction = Transaction.builder()
+                .type(TransactionType.WITHDRAW)
+                .accountFrom(ACC_2)
+                .amount(AMOUNT_100)
+                .date(java.time.Instant.now())
+                .build();
+        
+        when(transactionFactory.createWithdraw(ACC_2, AMOUNT_100))
+                .thenReturn(mockTransaction);
+        when(accountService.getByAccountNumber(ACC_2))
                 .thenReturn(Mono.just(accDto(2L, ACC_2, BAL_1000)));
-        when(accountClient.withdrawByAccountNumber(ACC_2, AMOUNT_100))
+        when(accountService.withdrawByAccountNumber(ACC_2, AMOUNT_100))
                 .thenReturn(Mono.just(accDto(2L, ACC_2, BAL_1000 - AMOUNT_100)));
         when(repository.save(any(Transaction.class)))
                 .thenAnswer(inv -> {
@@ -143,15 +168,17 @@ class TransactionServiceImplTest {
                 })
                 .verifyComplete();
 
-        verify(accountClient).getByAccountNumber(ACC_2);
-        verify(accountClient).withdrawByAccountNumber(ACC_2, AMOUNT_100);
+        verify(validator).validateWithdraw(ACC_2, AMOUNT_100);
+        verify(transactionFactory).createWithdraw(ACC_2, AMOUNT_100);
+        verify(accountService).getByAccountNumber(ACC_2);
+        verify(accountService).withdrawByAccountNumber(ACC_2, AMOUNT_100);
         verify(repository).save(any(Transaction.class));
     }
 
     @Test
     void givenInsufficientBalance_whenWithdraw_thenPropagatesInsufficientFunds() {
         // Arrange
-        when(accountClient.getByAccountNumber(ACC_3))
+        when(accountService.getByAccountNumber(ACC_3))
                 .thenReturn(Mono.just(accDto(3L, ACC_3, BAL_1000)));
 
         // Act & Assert
@@ -160,12 +187,19 @@ class TransactionServiceImplTest {
                 .verify();
 
         verify(repository, never()).save(any());
-        verify(accountClient, never()).withdrawByAccountNumber(anyString(), anyDouble());
+        verify(accountService, never()).withdrawByAccountNumber(anyString(), anyDouble());
     }
 
     // ÚNICO: monto inválido en withdraw (antes había duplicados)
     @Test
     void givenInvalidAmount_whenWithdraw_thenInvalidTransaction() {
+        // Arrange
+        doThrow(new InvalidTransactionException("El monto debe ser mayor a 0"))
+                .when(validator).validateWithdraw(ACC_2, 0.0);
+        doThrow(new InvalidTransactionException("El monto debe ser mayor a 0"))
+                .when(validator).validateWithdraw(ACC_2, -5.0);
+        
+        // Act & Assert
         StepVerifier.create(service.withdraw(ACC_2, 0.0))
                 .expectError(InvalidTransactionException.class)
                 .verify();
@@ -173,9 +207,6 @@ class TransactionServiceImplTest {
         StepVerifier.create(service.withdraw(ACC_2, -5.0))
                 .expectError(InvalidTransactionException.class)
                 .verify();
-
-        verifyNoInteractions(accountClient);
-        verify(repository, never()).save(any());
     }
 
     // ====== TRANSFERENCIA ======
@@ -183,14 +214,24 @@ class TransactionServiceImplTest {
     @Test
     void givenValidAccounts_whenTransfer_thenWithdrawOriginDepositDestAndSave() {
         // Arrange
-        when(accountClient.getByAccountNumber(ACC_ORIGIN))
+        Transaction mockTransaction = Transaction.builder()
+                .type(TransactionType.TRANSFER)
+                .accountFrom(ACC_ORIGIN)
+                .accountTo(ACC_DEST)
+                .amount(AMOUNT_200)
+                .date(java.time.Instant.now())
+                .build();
+        
+        when(transactionFactory.createTransfer(ACC_ORIGIN, ACC_DEST, AMOUNT_200))
+                .thenReturn(mockTransaction);
+        when(accountService.getByAccountNumber(ACC_ORIGIN))
                 .thenReturn(Mono.just(accDto(10L, ACC_ORIGIN, BAL_1000)));
-        when(accountClient.getByAccountNumber(ACC_DEST))
+        when(accountService.getByAccountNumber(ACC_DEST))
                 .thenReturn(Mono.just(accDto(99L, ACC_DEST, BAL_1000)));
 
-        when(accountClient.withdraw(10L, AMOUNT_200))
+        when(accountService.withdraw(10L, AMOUNT_200))
                 .thenReturn(Mono.just(accDto(10L, ACC_ORIGIN, BAL_1000 - AMOUNT_200)));
-        when(accountClient.deposit(99L, AMOUNT_200))
+        when(accountService.deposit(99L, AMOUNT_200))
                 .thenReturn(Mono.just(accDto(99L, ACC_DEST, BAL_1000 + AMOUNT_200)));
 
         when(repository.save(any(Transaction.class)))
@@ -213,19 +254,22 @@ class TransactionServiceImplTest {
                 })
                 .verifyComplete();
 
-        verify(accountClient).withdraw(10L, AMOUNT_200);
-        verify(accountClient).deposit(99L, AMOUNT_200);
+        verify(validator).validateTransfer(ACC_ORIGIN, ACC_DEST, AMOUNT_200);
+        verify(transactionFactory).createTransfer(ACC_ORIGIN, ACC_DEST, AMOUNT_200);
+        verify(accountService).withdraw(10L, AMOUNT_200);
+        verify(accountService).deposit(99L, AMOUNT_200);
         verify(repository).save(any(Transaction.class));
     }
 
     @Test
     void givenInvalidAmount_whenTransfer_thenInvalidTransaction() {
+        doThrow(new InvalidTransactionException("El monto debe ser mayor a 0"))
+                .when(validator).validateTransfer("A", "B", 0.0);
+
+        // Act & Assert
         StepVerifier.create(service.transfer("A", "B", 0.0))
                 .expectError(InvalidTransactionException.class)
                 .verify();
-
-        verifyNoInteractions(accountClient);
-        verify(repository, never()).save(any());
     }
 
     // ====== HISTORIAL ======
@@ -267,7 +311,7 @@ class TransactionServiceImplTest {
     // --- DEPOSITO: cuenta no existe (switchIfEmpty) ---
     @Test
     void givenUnknownAccount_whenDeposit_thenAccountNotFound() {
-        when(accountClient.getByAccountNumber("NA")).thenReturn(Mono.empty());
+        when(accountService.getByAccountNumber("NA")).thenReturn(Mono.empty());
         StepVerifier.create(service.deposit("NA", 10.0))
                 .expectErrorMatches(e -> e.getClass().getSimpleName().equals("AccountNotFoundException"))
                 .verify();
@@ -276,7 +320,7 @@ class TransactionServiceImplTest {
 
     @Test
     void givenUnknownAccount_whenWithdraw_thenAccountNotFound() {
-        when(accountClient.getByAccountNumber("NA")).thenReturn(Mono.empty());
+        when(accountService.getByAccountNumber("NA")).thenReturn(Mono.empty());
         StepVerifier.create(service.withdraw("NA", 10.0))
                 .expectErrorMatches(e -> e.getClass().getSimpleName().equals("AccountNotFoundException"))
                 .verify();
@@ -285,11 +329,14 @@ class TransactionServiceImplTest {
 
     @Test
     void givenSameOriginAndDestination_whenTransfer_thenInvalidTransaction() {
+        // Arrange
+        doThrow(new InvalidTransactionException("No se puede transferir a la misma cuenta"))
+                .when(validator).validateTransfer("ACC-1", "ACC-1", 50.0);
+        
+        // Act & Assert
         StepVerifier.create(service.transfer("ACC-1","ACC-1", 50.0))
                 .expectErrorMatches(e -> e.getClass().getSimpleName().equals("InvalidTransactionException"))
                 .verify();
-        verifyNoInteractions(accountClient);
-        verify(repository, never()).save(any());
     }
 
     @Test
@@ -337,34 +384,34 @@ class TransactionServiceImplTest {
     // ===== TRANSFER: origen NO encontrado =====
     @Test
     void givenUnknownOrigin_whenTransfer_thenAccountNotFound_andNoSideEffects() {
-        when(accountClient.getByAccountNumber(ACC_ORIGIN)).thenReturn(Mono.empty());
+        when(accountService.getByAccountNumber(ACC_ORIGIN)).thenReturn(Mono.empty());
 
         StepVerifier.create(service.transfer(ACC_ORIGIN, ACC_DEST, AMOUNT_200))
                 .expectErrorMatches(e -> e.getClass().getSimpleName().equals("AccountNotFoundException"))
                 .verify();
 
-        verify(accountClient).getByAccountNumber(ACC_ORIGIN);
-        verify(accountClient, never()).getByAccountNumber(ACC_DEST);
-        verify(accountClient, never()).withdraw(anyLong(), anyDouble());
-        verify(accountClient, never()).deposit(anyLong(), anyDouble());
+        verify(accountService).getByAccountNumber(ACC_ORIGIN);
+        verify(accountService, never()).getByAccountNumber(ACC_DEST);
+        verify(accountService, never()).withdraw(anyLong(), anyDouble());
+        verify(accountService, never()).deposit(anyLong(), anyDouble());
         verify(repository, never()).save(any());
     }
 
     // ===== TRANSFER: destino NO encontrado =====
     @Test
     void givenUnknownDestination_whenTransfer_thenAccountNotFound_andNoWithdrawOrDeposit() {
-        when(accountClient.getByAccountNumber(ACC_ORIGIN))
+        when(accountService.getByAccountNumber(ACC_ORIGIN))
                 .thenReturn(Mono.just(accDto(10L, ACC_ORIGIN, BAL_1000)));
-        when(accountClient.getByAccountNumber(ACC_DEST)).thenReturn(Mono.empty());
+        when(accountService.getByAccountNumber(ACC_DEST)).thenReturn(Mono.empty());
 
         StepVerifier.create(service.transfer(ACC_ORIGIN, ACC_DEST, AMOUNT_200))
                 .expectErrorMatches(e -> e.getClass().getSimpleName().equals("AccountNotFoundException"))
                 .verify();
 
-        verify(accountClient).getByAccountNumber(ACC_ORIGIN);
-        verify(accountClient).getByAccountNumber(ACC_DEST);
-        verify(accountClient, never()).withdraw(anyLong(), anyDouble());
-        verify(accountClient, never()).deposit(anyLong(), anyDouble());
+        verify(accountService).getByAccountNumber(ACC_ORIGIN);
+        verify(accountService).getByAccountNumber(ACC_DEST);
+        verify(accountService, never()).withdraw(anyLong(), anyDouble());
+        verify(accountService, never()).deposit(anyLong(), anyDouble());
         verify(repository, never()).save(any());
     }
 
@@ -423,14 +470,14 @@ class TransactionServiceImplTest {
 
     @Test
     void givenDepositFails_whenTransfer_thenPropagateError_andDoNotSave() {
-        when(accountClient.getByAccountNumber(ACC_ORIGIN))
+        when(accountService.getByAccountNumber(ACC_ORIGIN))
                 .thenReturn(Mono.just(accDto(10L, ACC_ORIGIN, BAL_1000)));
-        when(accountClient.getByAccountNumber(ACC_DEST))
+        when(accountService.getByAccountNumber(ACC_DEST))
                 .thenReturn(Mono.just(accDto(99L, ACC_DEST, BAL_1000)));
 
-        when(accountClient.withdraw(10L, AMOUNT_200))
+        when(accountService.withdraw(10L, AMOUNT_200))
                 .thenReturn(Mono.just(accDto(10L, ACC_ORIGIN, BAL_1000 - AMOUNT_200)));
-        when(accountClient.deposit(99L, AMOUNT_200))
+        when(accountService.deposit(99L, AMOUNT_200))
                 .thenReturn(Mono.error(new RuntimeException("deposit failed")));
 
         StepVerifier.create(service.transfer(ACC_ORIGIN, ACC_DEST, AMOUNT_200))
@@ -438,6 +485,6 @@ class TransactionServiceImplTest {
                 .verify();
 
         verify(repository, never()).save(any());
-    }*/
+    }
 
 }

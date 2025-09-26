@@ -1,0 +1,218 @@
+openapi: 3.0.3
+info:
+  title: Account API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8082
+
+paths:
+  /api/v1/cuentas:
+    get:
+      tags: [Cuentas]
+      operationId: listAccounts
+      summary: Listar cuentas (paginado y por cliente)
+      parameters:
+        - in: query
+          name: customerId
+          schema: { type: integer, format: int64 }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/Sort'
+      responses:
+        '200':
+          description: Página de cuentas
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountPage' }
+    post:
+      tags: [Cuentas]
+      operationId: createAccount
+      summary: Crear cuenta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AccountCreateDto' }
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountDto' }
+        '400': { description: Datos inválidos }
+
+  /api/v1/cuentas/{id}:
+    get:
+      tags: [Cuentas]
+      operationId: getAccount
+      summary: Obtener cuenta por id
+      parameters: [ { $ref: '#/components/parameters/IdPath' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AccountDto' } } } }
+        '404': { description: No encontrado }
+    delete:
+      tags: [Cuentas]
+      operationId: deleteAccount
+      summary: Eliminar cuenta
+      parameters: [ { $ref: '#/components/parameters/IdPath' } ]
+      responses:
+        '204': { description: Eliminado }
+        '404': { description: No encontrado }
+
+  /api/v1/cuentas/{id}/depositar:
+    put:
+      tags: [Cuentas]
+      operationId: deposit
+      summary: Depositar en cuenta
+      parameters: [ { $ref: '#/components/parameters/IdPath' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AmountDto' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AccountDto' } } } }
+        '404': { description: Cuenta no encontrada }
+        '400': { description: Datos inválidos }
+
+  /api/v1/cuentas/{id}/retirar:
+    put:
+      tags: [Cuentas]
+      operationId: withdraw
+      summary: Retirar de cuenta
+      parameters: [ { $ref: '#/components/parameters/IdPath' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AmountDto' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AccountDto' } } } }
+        '404': { description: Cuenta no encontrada }
+        '422': { description: Saldo insuficiente o regla de negocio }
+
+  /api/v1/cuentas/total-balance:
+    get:
+      tags: [Cuentas]
+      operationId: totalBalance
+      summary: Suma total de saldos por cliente
+      parameters:
+        - in: query
+          name: customerId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Total
+          content:
+            application/json:
+              schema: { type: number, format: double }
+
+  /api/v1/cuentas/ByNumber/{accountNumber}:
+    get:
+      tags: [ Cuentas ]
+      operationId: getAccountByNumber
+      summary: Obtener cuenta por número
+      parameters:
+        - in: path
+          name: accountNumber
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountDto' }
+        '404': { description: No encontrado }
+
+  /api/v1/cuentas/ByNumber/{accountNumber}/depositar:
+    put:
+      tags: [ Cuentas ]
+      operationId: depositByAccountNumber
+      summary: Depositar en cuenta por número
+      parameters:
+        - in: path
+          name: accountNumber
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AmountDto' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountDto' }
+
+  /api/v1/cuentas/ByNumber/{accountNumber}/retirar:
+    put:
+      tags: [ Cuentas ]
+      operationId: withdrawByAccountNumber
+      summary: Retirar de cuenta por número
+      parameters:
+        - in: path
+          name: accountNumber
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AmountDto' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountDto' }
+        '400': { description: Fondos insuficientes }
+
+components:
+  parameters:
+    Page: { in: query, name: page, schema: { type: integer, minimum: 0, default: 0 } }
+    Size: { in: query, name: size, schema: { type: integer, minimum: 1, maximum: 50, default: 10 } }
+    Sort: { in: query, name: sort, schema: { type: string, example: "id,desc" } }
+    IdPath: { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+
+  schemas:
+    AccountDto:
+      type: object
+      properties:
+        id:            { type: integer, format: int64 }
+        accountNumber: { type: string }
+        balance:       { type: number, format: double }
+        accountType:   { type: string, enum: [SAVINGS, CHECKING] }
+        customerId:    { type: integer, format: int64 }
+      required: [accountNumber, balance, accountType, customerId]
+
+    AccountCreateDto:
+      type: object
+      properties:
+        customerId:     { type: integer, format: int64 }
+        accountType:    { type: string, enum: [SAVINGS, CHECKING] }
+        initialDeposit: { type: number, format: double, minimum: 1 }
+      required: [customerId, accountType, initialDeposit]
+
+    AmountDto:
+      type: object
+      properties:
+        amount: { type: number, format: double, minimum: 1 }
+      required: [amount]
+
+    AccountPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/AccountDto' }
+        totalElements: { type: integer, format: int64 }
+        totalPages:    { type: integer, format: int32 }
+        number:        { type: integer }
+        size:          { type: integer }
+        first:         { type: boolean }
+        last:          { type: boolean }
+        sort:          { type: string }
