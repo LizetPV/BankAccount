@@ -1,16 +1,14 @@
 package com.bank.customerms.service;
-
 import com.bank.customerms.api.dto.CustomerDtos.CustomerCreateDto;
 import com.bank.customerms.api.dto.CustomerDtos.CustomerUpdateDto;
-import com.bank.customerms.client.AccountClient;
 import com.bank.customerms.domain.Customer;
+import com.bank.customerms.domain.rule.CustomerDeletionRule;
 import com.bank.customerms.repository.CustomerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.springframework.data.domain.*;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -21,130 +19,138 @@ import static org.mockito.Mockito.*;
 
 class CustomerServiceTest {
 
-  @Mock
-  private CustomerRepository repo;
+    @Mock
+    private CustomerRepository repo;
 
-  @Mock
-  private AccountClient accountClient;
+    //  ahora moqueamos la REGLA (no el AccountClient)
+    @Mock
+    private CustomerDeletionRule deletionRule;
 
-  @InjectMocks
-  private CustomerService service;
+    // El servicio aún recibe AccountClient por compatibilidad,
+    // pero no lo necesitamos para estas pruebas.
+    @Mock
+    private com.bank.customerms.client.AccountClient accountClient;
 
-  private Customer customer;
+    @InjectMocks
+    private CustomerService service;
 
-  @BeforeEach
-  void setup() {
-    MockitoAnnotations.openMocks(this);
-    customer = Customer.builder()
-        .id(1L)
-        .firstName("Ana")
-        .lastName("Lopez")
-        .dni("12345678")
-        .email("ana@mail.com")
-        .build();
-  }
+    private Customer customer;
 
-  @Test
-  void testCreateSuccess() {
-    when(repo.existsByDni("12345678")).thenReturn(false);
-    when(repo.save(any(Customer.class))).thenReturn(customer);
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+        customer = Customer.builder()
+                .id(1L).firstName("Ana").lastName("Lopez")
+                .dni("12345678").email("ana@mail.com").build();
 
-    var dto = new CustomerCreateDto("Ana", "Lopez", "12345678", "ana@mail.com");
-    var saved = service.create(dto);
+        // Inyectamos la regla en el field @Autowired(required=false)
+        ReflectionTestUtils.setField(service, "deletionRule", deletionRule);
+    }
 
-    assertEquals("Ana", saved.getFirstName());
-    verify(repo).save(any(Customer.class));
-  }
+    @Test
+    void testCreateSuccess() {
+        when(repo.existsByDni("12345678")).thenReturn(false);
+        when(repo.save(any(Customer.class))).thenReturn(customer);
 
-  @Test
-  void testCreateFailsWhenDniExists() {
-    when(repo.existsByDni("12345678")).thenReturn(true);
-    var dto = new CustomerCreateDto("Ana", "Lopez", "12345678", "ana@mail.com");
-    assertThrows(IllegalArgumentException.class, () -> service.create(dto));
-  }
+        var dto = new CustomerCreateDto("Ana", "Lopez", "12345678", "ana@mail.com");
+        var saved = service.create(dto);
 
-  @Test
-  void testGetSuccess() {
-    when(repo.findById(1L)).thenReturn(Optional.of(customer));
-    var result = service.get(1L);
-    assertEquals("Ana", result.getFirstName());
-  }
+        assertEquals("Ana", saved.getFirstName());
+        verify(repo).save(any(Customer.class));
+    }
 
-  @Test
-  void testGetNotFound() {
-    when(repo.findById(2L)).thenReturn(Optional.empty());
-    assertThrows(NoSuchElementException.class, () -> service.get(2L));
-  }
+    @Test
+    void testCreateFailsWhenDniExists() {
+        when(repo.existsByDni("12345678")).thenReturn(true);
+        var dto = new CustomerCreateDto("Ana", "Lopez", "12345678", "ana@mail.com");
+        assertThrows(IllegalArgumentException.class, () -> service.create(dto));
+    }
 
-  @Test
-  void testUpdateSuccess() {
-    when(repo.findById(1L)).thenReturn(Optional.of(customer));
-    when(repo.save(any(Customer.class))).thenReturn(customer);
+    @Test
+    void testGetSuccess() {
+        when(repo.findById(1L)).thenReturn(Optional.of(customer));
+        var result = service.get(1L);
+        assertEquals("Ana", result.getFirstName());
+    }
 
-    var dto = new CustomerUpdateDto("Maria", "Perez", "maria@mail.com");
-    var updated = service.update(1L, dto);
+    @Test
+    void testGetNotFound() {
+        when(repo.findById(2L)).thenReturn(Optional.empty());
+        assertThrows(NoSuchElementException.class, () -> service.get(2L));
+    }
 
-    assertEquals("Maria", updated.getFirstName());
-    assertEquals("Perez", updated.getLastName());
-  }
+    @Test
+    void testUpdateSuccess() {
+        when(repo.findById(1L)).thenReturn(Optional.of(customer));
+        when(repo.save(any(Customer.class))).thenReturn(customer);
 
-  @Test
-  void testDeleteSuccess() {
-    when(repo.findById(1L)).thenReturn(Optional.of(customer));
-    when(accountClient.hasAccounts(1L)).thenReturn(false);
+        var dto = new CustomerUpdateDto("Maria", "Perez", "maria@mail.com");
+        var updated = service.update(1L, dto);
 
-    service.delete(1L);
+        assertEquals("Maria", updated.getFirstName());
+        assertEquals("Perez", updated.getLastName());
+    }
 
-    verify(repo).deleteById(1L);
-  }
+    @Test
+    void testDeleteSuccess() {
+        when(repo.findById(1L)).thenReturn(Optional.of(customer));
+        // la regla permite borrar (no lanza)
+        doNothing().when(deletionRule).checkDeletable(1L);
 
-  @Test
-  void testDeleteFailsIfHasAccounts() {
-    when(repo.findById(1L)).thenReturn(Optional.of(customer));
-    when(accountClient.hasAccounts(1L)).thenReturn(true);
+        service.delete(1L);
 
-    assertThrows(IllegalStateException.class, () -> service.delete(1L));
-  }
+        verify(deletionRule).checkDeletable(1L);
+        verify(repo).deleteById(1L);
+    }
 
-  @Test
-  void testListWithoutQuery() {
-    Pageable pageable = PageRequest.of(0, 10);
-    when(repo.findAll(pageable)).thenReturn(new PageImpl<>(List.of(customer)));
+    @Test
+    void testDeleteFailsIfRuleBlocks() {
+        when(repo.findById(1L)).thenReturn(Optional.of(customer));
+        // la regla bloquea
+        doThrow(new IllegalStateException("Customer has active accounts"))
+                .when(deletionRule).checkDeletable(1L);
 
-    var result = service.list(null, pageable);
-    assertEquals(1, result.getTotalElements());
-  }
+        assertThrows(IllegalStateException.class, () -> service.delete(1L));
+        verify(deletionRule).checkDeletable(1L);
+        verify(repo, never()).deleteById(anyLong());
+    }
 
-  @Test
-  void testListWithQuery() {
-    Pageable pageable = PageRequest.of(0, 10);
-    when(repo.findByDniContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
-        anyString(), anyString(), anyString(), eq(pageable)))
-        .thenReturn(new PageImpl<>(List.of(customer)));
+    @Test
+    void testListWithoutQuery() {
+        Pageable pageable = PageRequest.of(0, 10);
+        when(repo.findAll(pageable)).thenReturn(new PageImpl<>(List.of(customer)));
 
-    var result = service.list("Ana", pageable);
-    assertEquals(1, result.getTotalElements());
-  }
+        var result = service.list(null, pageable);
+        assertEquals(1, result.getTotalElements());
+    }
 
-  @Test
-  void testListAll_noArgs() {
-    when(repo.findAll()).thenReturn(List.of(customer));
+    @Test
+    void testListWithQuery() {
+        Pageable pageable = PageRequest.of(0, 10);
+        when(repo.findByDniContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+                anyString(), anyString(), anyString(), eq(pageable)))
+                .thenReturn(new PageImpl<>(List.of(customer)));
 
-    var result = service.list();
+        var result = service.list("Ana", pageable);
+        assertEquals(1, result.getTotalElements());
+    }
 
-    assertEquals(1, result.size());
-    assertEquals("Ana", result.get(0).getFirstName());
-  }
+    @Test
+    void testListAll_noArgs() {
+        when(repo.findAll()).thenReturn(List.of(customer));
+        var result = service.list();
+        assertEquals(1, result.size());
+        assertEquals("Ana", result.get(0).getFirstName());
+    }
 
-  @Test
-  void testListWithBlankQuery() {
-    Pageable pageable = PageRequest.of(0, 10);
-    when(repo.findAll(pageable)).thenReturn(new PageImpl<>(List.of(customer)));
+    @Test
+    void testListWithBlankQuery() {
+        Pageable pageable = PageRequest.of(0, 10);
+        when(repo.findAll(pageable)).thenReturn(new PageImpl<>(List.of(customer)));
 
-    var result = service.list("   ", pageable);
+        var result = service.list("   ", pageable);
 
-    assertEquals(1, result.getTotalElements());
-    verify(repo).findAll(pageable);
-  }
-
+        assertEquals(1, result.getTotalElements());
+        verify(repo).findAll(pageable);
+    }
 }

@@ -3,6 +3,7 @@ package com.bank.accountms.api;
 import com.bank.accountms.contract.model.*;
 import com.bank.accountms.domain.Account;
 import com.bank.accountms.service.AccountService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -30,11 +31,17 @@ class AccountControllerTest {
     @InjectMocks
     private AccountController accountController;
 
+    private AutoCloseable closeable;
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        //  2) Guardamos la referencia a los mocks abiertos
+        closeable = MockitoAnnotations.openMocks(this);
     }
-
+    //  3) Cerramos los mocks después de cada test
+    @AfterEach
+    void tearDown() throws Exception {
+        if (closeable != null) closeable.close();
+    }
     @Test
     void testListAccounts() {
         Account acc = new Account();
@@ -45,7 +52,7 @@ class AccountControllerTest {
         acc.setCustomerId(10L);
         List<Account> accounts = List.of(acc);
         Page<Account> page = new PageImpl<>(accounts, PageRequest.of(0, 10), 1);
-        when(accountService.list(any(Long.class), any(Pageable.class))).thenReturn(page);
+        when(accountService.list(anyLong(), any(Pageable.class))).thenReturn(page);
 
         ResponseEntity<AccountPage> response = accountController.listAccounts(10L, 0, 10, "id,desc");
         assertEquals(HttpStatus.OK, response.getStatusCode());
