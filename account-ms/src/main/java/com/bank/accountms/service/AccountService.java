@@ -126,7 +126,8 @@ public class AccountService {
     /** Obtener por número o 404. */
     public Account getByAccountNumber(String accountNumber) {
         return repo.findByAccountNumber(accountNumber)
-                .orElseThrow(() -> new NoSuchElementException("Account not found: " + accountNumber));
+                .orElseThrow(() -> new NoSuchElementException(
+                    "Account not found: " + accountNumber));
     }
 
     /** Depósito por número de cuenta. */

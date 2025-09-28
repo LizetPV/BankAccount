@@ -48,7 +48,10 @@ public class TransactionServiceImpl implements TransactionService {
                     .flatMap(account ->
                             accountService.depositByAccountNumber(accountNumber, amount)
                                     .flatMap(updated -> {
-                                        Transaction tx = transactionFactory.createDeposit(accountNumber, amount);
+                                        Transaction tx =
+                                            transactionFactory.createDeposit(
+                                                accountNumber,
+                                                amount);
                                         return repository.save(tx);
                                     })
                     );
@@ -74,7 +77,10 @@ public class TransactionServiceImpl implements TransactionService {
                         }
                         return accountService.withdrawByAccountNumber(accountNumber, amount)
                                 .flatMap(updated -> {
-                                    Transaction tx = transactionFactory.createWithdraw(accountNumber, amount);
+                                    Transaction tx =
+                                        transactionFactory.createWithdraw(
+                                            accountNumber,
+                                            amount);
                                     return repository.save(tx);
                                 });
                     });
@@ -107,8 +113,11 @@ public class TransactionServiceImpl implements TransactionService {
                                         accountService.withdraw(origin.getId(), amount)
                                                 .then(accountService.deposit(dest.getId(), amount))
                                                 .flatMap(updated -> {
-                                                    Transaction tx = transactionFactory.createTransfer(
-                                                            originAccountNumber, destinationAccountNumber, amount);
+                                                    Transaction tx =
+                                                        transactionFactory.createTransfer(
+                                                            originAccountNumber,
+                                                        destinationAccountNumber,
+                                                        amount);
                                                     return repository.save(tx);
                                                 })
                                 );

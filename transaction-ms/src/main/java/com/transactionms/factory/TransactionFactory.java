@@ -116,7 +116,11 @@ public class TransactionFactory {
      * @param notes notas adicionales
      * @return transacción de transferencia
      */
-    public Transaction createTransfer(String accountFrom, String accountTo, Double amount, String notes) {
+    public Transaction createTransfer(
+        String accountFrom,
+        String accountTo,
+        Double amount,
+        String notes) {
         return Transaction.builder()
                 .type(TransactionType.TRANSFER)
                 .accountFrom(accountFrom)

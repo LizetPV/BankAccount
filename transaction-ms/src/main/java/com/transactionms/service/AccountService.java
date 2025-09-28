@@ -5,8 +5,10 @@ import reactor.core.publisher.Mono;
 
 /**
  * Interface para operaciones con cuentas bancarias.
- * Cumple con Dependency Inversion Principle (DIP) - abstracción en lugar de implementación concreta.
- * Cumple con Interface Segregation Principle (ISP) - interface específica para operaciones de cuenta.
+ * Cumple con Dependency Inversion Principle (DIP)
+ * - abstracción en lugar de implementación concreta.
+ * Cumple con Interface Segregation Principle (ISP)
+ * - interface específica para operaciones de cuenta.
  */
 public interface AccountService {
 

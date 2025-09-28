@@ -82,7 +82,55 @@ class TransactionValidatorTest {
         assertThrows(InvalidTransactionException.class, () -> validator.validateWithdraw(ACC_VALID, 0.0));
     }
 
-    // =================================================================
+    @Test
+    void givenNullAccount_whenValidateWithdraw_thenThrowsException() {
+      InvalidTransactionException e = assertThrows(
+          InvalidTransactionException.class,
+          () -> validator.validateWithdraw(null, 100.0));
+      assertEquals("El número de cuenta no puede estar vacío", e.getMessage());
+    }
+
+    @Test
+    void givenEmptyAccount_whenValidateWithdraw_thenThrowsException() {
+      InvalidTransactionException e = assertThrows(
+          InvalidTransactionException.class,
+          () -> validator.validateWithdraw("   ", 100.0));
+      assertEquals("El número de cuenta no puede estar vacío", e.getMessage());
+    }
+
+    @Test
+    void givenNullAmount_whenValidateWithdraw_thenThrowsException() {
+      InvalidTransactionException e = assertThrows(
+          InvalidTransactionException.class,
+          () -> validator.validateWithdraw(ACC_VALID, null));
+      assertEquals("El monto no puede ser nulo", e.getMessage());
+    }
+
+    @Test
+    void givenNullAccount_whenValidateDeposit_thenThrowsException() {
+      InvalidTransactionException e = assertThrows(
+          InvalidTransactionException.class,
+          () -> validator.validateDeposit(null, 100.0));
+      assertEquals("El número de cuenta no puede estar vacío", e.getMessage());
+    }
+
+    @Test
+    void givenNullAmount_whenValidateDeposit_thenThrowsException() {
+      InvalidTransactionException e = assertThrows(
+          InvalidTransactionException.class,
+          () -> validator.validateDeposit(ACC_VALID, null));
+      assertEquals("El monto no puede ser nulo", e.getMessage());
+    }
+
+    @Test
+    void givenZeroAmount_whenValidateDeposit_thenThrowsException() {
+      InvalidTransactionException e = assertThrows(
+          InvalidTransactionException.class,
+          () -> validator.validateDeposit(ACC_VALID, 0.0));
+      assertEquals("El monto debe ser mayor a 0", e.getMessage());
+    }
+
+  // =================================================================
     // TESTS PARA validateTransfer
     // =================================================================
 
@@ -103,4 +151,36 @@ class TransactionValidatorTest {
     void givenInvalidOriginAccount_whenValidateTransfer_thenThrowsException() {
         assertThrows(InvalidTransactionException.class, () -> validator.validateTransfer(null, ACC_OTHER, 1.0));
     }
+
+  @Test
+  void givenInvalidDestinationAccount_whenValidateTransfer_thenThrowsException() {
+    InvalidTransactionException e = assertThrows(
+        InvalidTransactionException.class,
+        () -> validator.validateTransfer(ACC_VALID, null, 50.0));
+    assertEquals("El número de cuenta no puede estar vacío", e.getMessage());
+  }
+
+  @Test
+  void givenNullAmount_whenValidateTransfer_thenThrowsException() {
+    InvalidTransactionException e = assertThrows(
+        InvalidTransactionException.class,
+        () -> validator.validateTransfer(ACC_VALID, ACC_OTHER, null));
+    assertEquals("El monto no puede ser nulo", e.getMessage());
+  }
+
+  @Test
+  void givenZeroAmount_whenValidateWithdraw_thenThrowsException() {
+    InvalidTransactionException e = assertThrows(
+        InvalidTransactionException.class,
+        () -> validator.validateWithdraw(ACC_VALID, 0.0));
+    assertEquals("El monto debe ser mayor a 0", e.getMessage());
+  }
+
+  @Test
+  void givenNegativeAmount_whenValidateTransfer_thenThrowsException() {
+    InvalidTransactionException e = assertThrows(
+        InvalidTransactionException.class,
+        () -> validator.validateTransfer(ACC_VALID, ACC_OTHER, -5.0));
+    assertEquals("El monto debe ser mayor a 0", e.getMessage());
+  }
 }

@@ -18,10 +18,14 @@ import java.util.NoSuchElementException;
 
 /**
  * Servicio de dominio para clientes.
- * - SRP: el servicio orquesta casos de uso; la regla de eliminación vive fuera (CustomerDeletionRule).
- * - OCP: nuevas reglas se agregan con nuevas implementaciones de la interfaz, sin tocar este servicio.
- * - DIP: dependemos de una abstracción (CustomerDeletionRule). Mantenemos fallback con AccountClient
- *   para no romper tests existentes y permitir funcionamiento si no se define la regla como bean.
+ * - SRP: el servicio orquesta casos de uso;
+ * la regla de eliminación vive fuera (CustomerDeletionRule).
+ * - OCP: nuevas reglas se agregan con nuevas implementaciones de la interfaz,
+ * sin tocar este servicio.
+ * - DIP: dependemos de una abstracción (CustomerDeletionRule).
+ * Mantenemos fallback con AccountClient
+ *   para no romper tests existentes y
+ *   permitir funcionamiento si no se define la regla como bean.
  */
 @Service
 @RequiredArgsConstructor
@@ -61,9 +65,11 @@ public class CustomerService {
         return repo.findAll();
     }
 
-    /** Obtiene un cliente o lanza 404 (NoSuchElementException mapeada por ControllerAdvice). */
+    /** Obtiene un cliente o lanza 404
+     * (NoSuchElementException mapeada por ControllerAdvice). */
     public Customer get(Long id) {
-        return repo.findById(id).orElseThrow(() -> new NoSuchElementException("Customer not found"));
+        return repo.findById(id).orElseThrow(() -> new NoSuchElementException(
+            "Customer not found"));
     }
 
     /** Actualiza datos básicos. */
@@ -105,7 +111,8 @@ public class CustomerService {
             return repo.findAll(pageable);
         }
         var k = q.strip();
-        return repo.findByDniContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
+        return
+            repo.findByDniContainingIgnoreCaseOrFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
                 k, k, k, pageable
         );
     }

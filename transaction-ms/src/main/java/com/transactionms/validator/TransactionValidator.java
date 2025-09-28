@@ -61,13 +61,16 @@ public class TransactionValidator {
      * @param destinationAccountNumber cuenta destino
      * @param amount monto de la transferencia
      */
-    public void validateTransfer(String originAccountNumber, String destinationAccountNumber, Double amount) {
+    public void validateTransfer(
+        String originAccountNumber,
+        String destinationAccountNumber, Double amount) {
         validateAccountNumber(originAccountNumber);
         validateAccountNumber(destinationAccountNumber);
         validateAmount(amount);
         
         if (originAccountNumber.equals(destinationAccountNumber)) {
-            throw new InvalidTransactionException("La cuenta origen y destino no pueden ser iguales");
+            throw new InvalidTransactionException(
+                "La cuenta origen y destino no pueden ser iguales");
         }
     }
 }

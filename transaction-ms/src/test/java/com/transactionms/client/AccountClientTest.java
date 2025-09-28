@@ -93,6 +93,21 @@ class AccountClientTest {
                 .verifyComplete();
     }
 
+  @Test void testDepositByAccountNumber() { // Simulamos la respuesta JSON del servicio
+      String mockJson = """ 
+          {"id": 1, "accountNumber": "12345", "balance": 200.0} 
+          """;
+      server.enqueue(new MockResponse()
+          .setHeader("Content-Type", "application/json")
+          .setBody(mockJson)
+          .setResponseCode(200));
+      StepVerifier.create(client.depositByAccountNumber("12345", 100.0))
+          .expectNextMatches(account ->
+              account.getId() == 1L &&
+                  account.getAccountNumber().equals("12345") &&
+                  account.getBalance() == 200.0 )
+          .verifyComplete(); }
+
     // --- Helpers (DRY + KISS) ---
     private static MockResponse json(int code, String body) {
         return new MockResponse()
