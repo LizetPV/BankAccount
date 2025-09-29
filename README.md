@@ -34,9 +34,9 @@ El objetivo fue construir un ecosistema bancario compuesto por microservicios in
 - **Otras librerías:** Lombok, JPA/Hibernate  
 
 ### 🧪 Pruebas & Calidad
-✅ **JUnit 5 + Mockito** (tests unitarios y reactivos)  
-✅ **Jacoco** (cobertura de código)  
-✅ **Checkstyle** (estilo de código)  
+  ✅ **JUnit 5 + Mockito** (tests unitarios y reactivos)  
+  ✅ **Jacoco** (cobertura de código)  
+  ✅ **Checkstyle** (estilo de código)  
 
 ---
 
@@ -83,6 +83,6 @@ El objetivo fue construir un ecosistema bancario compuesto por microservicios in
 - **Factory**  
 
 ### 🛡 Calidad de Código
-✔️ Cobertura de pruebas con **Jacoco**  
-✔️ Estilo validado con **Checkstyle**  
-✔️ Tests unitarios y reactivos con **JUnit + Mockito**  
+  ✔️ Cobertura de pruebas con **Jacoco**  
+  ✔️ Estilo validado con **Checkstyle**  
+  ✔️ Tests unitarios y reactivos con **JUnit + Mockito**  
