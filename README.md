@@ -83,6 +83,6 @@ El objetivo fue construir un ecosistema bancario compuesto por microservicios in
 - **Factory**  
 
 ### 🛡 Calidad de Código
-- ✔️ Cobertura de pruebas con **Jacoco**  
-- ✔️ Estilo validado con **Checkstyle**  
-- ✔️ Tests unitarios y reactivos con **JUnit + Mockito**  
+✔️ Cobertura de pruebas con **Jacoco**  
+✔️ Estilo validado con **Checkstyle**  
+✔️ Tests unitarios y reactivos con **JUnit + Mockito**  
